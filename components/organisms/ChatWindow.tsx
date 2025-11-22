@@ -2,8 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Message } from 'react-hook-form';
-import { useChat } from '@/hooks/useChat';
+import { useChat, type Message } from '@/hooks/useChat';
 import { useSessionStore } from '@/lib/sessionStore';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';

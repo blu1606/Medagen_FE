@@ -16,7 +16,9 @@ import {
 
 import { useSessionStore } from '@/lib/sessionStore';
 
-// ... imports
+interface SessionSidebarProps {
+    className?: string;
+}
 
 export function SessionSidebar({ className }: SessionSidebarProps) {
     const router = useRouter();
