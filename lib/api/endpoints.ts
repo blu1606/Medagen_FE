@@ -48,6 +48,14 @@ export const ENDPOINTS = {
     CLINIC: '/api/maps/clinic', // GET - Find nearest clinic
   },
 
+  // Report Generation
+  REPORTS: {
+    GET: (sessionId: string, type?: 'full' | 'summary' | 'tools_only') => 
+      `/api/reports/${sessionId}${type ? `?type=${type}` : ''}`, // GET - Generate/Get full report
+    MARKDOWN: (sessionId: string) => `/api/reports/${sessionId}/markdown`, // GET - Get markdown only
+    JSON: (sessionId: string) => `/api/reports/${sessionId}/json`, // GET - Get JSON only
+  },
+
   // AI Agent Management (Not available in current backend)
   AGENTS: {
     STATUS: (sessionId: string) => `/api/sessions/${sessionId}/agent/status`, // Not available

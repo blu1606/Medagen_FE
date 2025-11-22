@@ -16,14 +16,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CompleteTriageReport } from '@/lib/api/types';
 import { AlertTriangle, MapPin, Calendar, FileText, Download, Share2, Printer, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface CompleteTriageReportCardProps {
     report: CompleteTriageReport | null;
+    markdown?: string | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export function CompleteTriageReportCard({ report, open, onOpenChange }: CompleteTriageReportCardProps) {
+export function CompleteTriageReportCard({ report, markdown, open, onOpenChange }: CompleteTriageReportCardProps) {
     if (!report) return null;
 
     const handleDownload = () => {
@@ -80,7 +83,13 @@ export function CompleteTriageReportCard({ report, open, onOpenChange }: Complet
                 </DialogHeader>
 
                 <ScrollArea className="flex-1 px-6 py-6">
-                    <div className="space-y-8">
+                    <Tabs defaultValue="structured" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-6">
+                            <TabsTrigger value="structured">Structured Report</TabsTrigger>
+                            <TabsTrigger value="markdown">Full Report (Markdown)</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="structured" className="space-y-8">
                         {/* Summary Section */}
                         <section className="grid md:grid-cols-2 gap-6">
                             <Card>
@@ -227,7 +236,28 @@ export function CompleteTriageReportCard({ report, open, onOpenChange }: Complet
                                 </CardContent>
                             </Card>
                         </section>
-                    </div>
+                        </TabsContent>
+
+                        <TabsContent value="markdown" className="space-y-4">
+                            {markdown ? (
+                                <Card>
+                                    <CardContent className="p-6">
+                                        <div className="prose dark:prose-invert max-w-none">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {markdown}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card>
+                                    <CardContent className="p-6 text-center text-muted-foreground">
+                                        <p>Markdown report not available. Please regenerate the report.</p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </ScrollArea>
 
                 <DialogFooter className="px-6 py-4 border-t bg-muted/30">

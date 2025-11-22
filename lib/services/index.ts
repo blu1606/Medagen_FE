@@ -10,6 +10,7 @@ export { patientService } from './patient.service';
 export { conversationService } from './conversation.service';
 export { agentService } from './agent.service';
 export { storageService, uploadImageToSupabase } from './storage.service';
+export { reportService } from './report.service';
 
 // Export error classes
 export {
@@ -33,3 +34,4 @@ export { default as sessionServiceDefault } from './session.service';
 export { default as patientServiceDefault } from './patient.service';
 export { default as conversationServiceDefault } from './conversation.service';
 export { default as agentServiceDefault } from './agent.service';
+export { default as reportServiceDefault } from './report.service';
