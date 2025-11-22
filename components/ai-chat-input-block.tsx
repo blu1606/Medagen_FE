@@ -37,7 +37,7 @@ return (
   <div className="flex items-center flex-col gap-2 max-w-2xl w-full">
     <div className="flex items-center justify-end max-sm:justify-center w-full">
       <Select onValueChange={handleModelChange} value={model}>
-        <SelectTrigger className="w-35 font-medium" variant={"ghost"}>
+        <SelectTrigger className="w-35 font-medium">
           <SelectValue placeholder="Select Model" />
         </SelectTrigger>
         <SelectContent className="text-sm">
