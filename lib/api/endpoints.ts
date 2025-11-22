@@ -56,6 +56,16 @@ export const ENDPOINTS = {
     LOGS: (sessionId: string) => `/api/sessions/${sessionId}/agent/logs`, // Not available
   },
 
+  // Patient Management (Not available in current backend)
+  PATIENTS: {
+    CREATE: '/api/patients', // Not available
+    GET: (id: string) => `/api/patients/${id}`, // Not available
+    LIST: '/api/patients', // Not available
+    SEARCH: '/api/patients/search', // Not available
+    UPDATE: (id: string) => `/api/patients/${id}`, // Not available
+    DELETE: (id: string) => `/api/patients/${id}`, // Not available
+  },
+
   // Health Check
   HEALTH: '/health', // GET - Health check endpoint
 } as const;

@@ -90,14 +90,16 @@ export const sessionService = {
             const response = await apiClient.get<any>(
                 ENDPOINTS.SESSIONS.GET(id) // GET /api/sessions/:id
             );
-            
+
             const backendData = response.data;
-            
+
             // Transform backend format to frontend format
             const sessionResponse: SessionResponse = {
                 id: backendData.id,
                 patient_id: backendData.user_id,
                 patient_data: {
+                    name: backendData.user_id || 'Guest User',
+                    age: 30, // Default age
                     chiefComplaint: backendData.input_text || '',
                     // Map other fields if available
                 },
