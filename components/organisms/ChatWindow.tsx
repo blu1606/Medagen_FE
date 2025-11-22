@@ -251,13 +251,11 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     )}
                 </AnimatePresence>
 
-                {!triageResult && (
-                    <ChatInput
-                        onSend={handleSend}
-                        disabled={isLoading}
-                        suggestedReplies={isLoading ? [] : quickReplySuggestions}
-                    />
-                )}
+                <ChatInput
+                    onSend={handleSend}
+                    disabled={isLoading}
+                    suggestedReplies={isLoading ? [] : quickReplySuggestions}
+                />
             </div>
         </div>
     );

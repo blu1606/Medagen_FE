@@ -240,15 +240,26 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                 )}
 
                 {/* Footer Actions */}
-                <div className="p-4 bg-card border-t flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleShare}
-                    >
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                    </Button>
+                <div className="p-4 bg-card border-t flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleShare}
+                        >
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleDownloadPDF}
+                            disabled={isExporting}
+                        >
+                            <Download className="h-4 w-4 mr-2" />
+                            {isExporting ? 'Exporting...' : 'Export Result'}
+                        </Button>
+                    </div>
                     <Button
                         variant="outline"
                         size="sm"
