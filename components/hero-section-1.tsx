@@ -8,6 +8,7 @@ import { AnimatedGroup } from '@/components/ui/animated-group'
 import { HowItWorks } from '@/components/how-it-works'
 import { Pricing } from '@/components/pricing'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from '@/components/utility/ThemeToggle'
 
 import { Variants } from 'framer-motion'
 
@@ -395,14 +396,12 @@ export function HeroSection() {
                             </div>
                             <div className="relative">
                                 <div className="aspect-square rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-8 border">
-                                    <div className="h-full w-full rounded-xl bg-card border shadow-lg flex items-center justify-center">
-                                        <div className="text-center p-8">
-                                            <svg className="h-24 w-24 mx-auto mb-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            <h3 className="text-2xl font-bold mb-2">Real-Time Triage</h3>
-                                            <p className="text-muted-foreground">Instant AI-powered analysis</p>
-                                        </div>
+                                    <div className="h-full w-full rounded-xl bg-card border shadow-lg overflow-hidden">
+                                        <img
+                                            src="/real_time_triage.png"
+                                            alt="Real-Time Triage Dashboard"
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -614,7 +613,8 @@ const HeroHeader = () => {
                                     ))}
                                 </ul>
                             </div>
-                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit md:items-center">
+                                <ThemeToggle />
                                 <Button
                                     asChild
                                     variant="outline"
