@@ -173,12 +173,12 @@ export interface TriageResult {
   red_flags: string[];
   suspected_conditions: Array<{
     name: string;
-    source: 'cv_model' | 'guideline' | 'user_report' | 'reasoning';
+    source?: 'cv_model' | 'guideline' | 'user_report' | 'reasoning';
     confidence: 'low' | 'medium' | 'high';
   }>;
-  cv_findings: {
+  cv_findings?: {
     model_used: 'derm_cv' | 'eye_cv' | 'wound_cv' | 'none';
-    raw_output: any;
+    raw_output?: any;
   };
   recommendation: {
     action: string;

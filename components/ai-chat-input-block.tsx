@@ -75,7 +75,7 @@ return (
             <Toggle className="h-9 w-9">
               <Lightbulb className="size-4 shrink-0"/>
             </Toggle>
-            <Toggle variant={"ghost"} className="font-normal flex gap-1.5 items-center text-sm">
+            <Toggle variant="outline" className="font-normal flex gap-1.5 items-center text-sm">
               <Globe className="size-4 shrink-0" /> <span className="max-sm:hidden">Search</span>
             </Toggle>
           </div>
