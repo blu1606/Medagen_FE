@@ -19,6 +19,8 @@ import {
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 interface EnhancedTriageResultProps {
     result: {
@@ -36,6 +38,8 @@ interface EnhancedTriageResultProps {
 
 export function EnhancedTriageResult({ result, patientData, onNewAssessment }: EnhancedTriageResultProps) {
     const [isExporting, setIsExporting] = useState(false);
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     const getSeverityConfig = (severity: string) => {
         switch (severity) {
@@ -81,21 +85,21 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
     const Icon = config.icon;
 
     const handleFindClinic = () => {
-        toast.info('Opening nearby clinics...', {
-            description: 'This feature will show clinics based on your location'
+        toast.info(t.chat.triage.clinicToast, {
+            description: t.chat.triage.clinicDesc
         });
         // In real app: window.open with maps API
     };
 
     const handleBookAppointment = () => {
-        toast.info('Opening appointment booking...', {
-            description: 'Connect with healthcare providers in your area'
+        toast.info(t.chat.triage.appointmentToast, {
+            description: t.chat.triage.appointmentDesc
         });
     };
 
     const handleEmailDoctor = async () => {
-        toast.success('Email prepared!', {
-            description: 'Opening your email client with the report'
+        toast.success(t.chat.triage.emailToast, {
+            description: t.chat.triage.emailDesc
         });
         // In real app: generate mailto link with full report
     };
@@ -104,8 +108,8 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
         setIsExporting(true);
         try {
             await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate PDF generation
-            toast.success('Report downloaded!', {
-                description: 'Check your downloads folder'
+            toast.success(t.chat.triage.downloadToast, {
+                description: t.chat.triage.downloadDesc
             });
         } finally {
             setIsExporting(false);
@@ -115,13 +119,13 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
     const handleShare = () => {
         if (navigator.share) {
             navigator.share({
-                title: 'Medagen Health Report',
+                title: t.chat.triage.shareTitle,
                 text: `Triage result for ${patientData.chiefComplaint}`,
                 url: window.location.href
             });
         } else {
             navigator.clipboard.writeText(window.location.href);
-            toast.success('Link copied to clipboard!');
+            toast.success(t.chat.triage.shareToast);
         }
     };
 
@@ -145,7 +149,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                             </div>
                             <div>
                                 <h3 className="font-semibold text-lg mb-1">
-                                    Your Triage Result
+                                    {t.chat.triage.title}
                                 </h3>
                                 <Badge className={config.color}>
                                     {result.severity}
@@ -163,7 +167,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                 <div className="p-4 bg-card border-t">
                     <p className="text-sm font-semibold mb-3 flex items-center gap-2">
                         <span className="text-primary">⚡</span>
-                        Quick Actions:
+                        {t.chat.triage.quickActions}:
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                         {result.severity !== 'Mild' && (
@@ -174,7 +178,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                                 className="justify-start"
                             >
                                 <MapPin className="h-4 w-4 mr-2" />
-                                Find Clinics
+                                {t.chat.triage.findClinics}
                             </Button>
                         )}
                         {result.severity !== 'Emergency' && (
@@ -185,7 +189,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                                 className="justify-start"
                             >
                                 <Calendar className="h-4 w-4 mr-2" />
-                                Book Appointment
+                                {t.chat.triage.bookAppointment}
                             </Button>
                         )}
                         <Button
@@ -195,7 +199,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                             className="justify-start"
                         >
                             <Mail className="h-4 w-4 mr-2" />
-                            Email to Doctor
+                            {t.chat.triage.emailDoctor}
                         </Button>
                         <Button
                             variant="outline"
@@ -205,7 +209,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                             className="justify-start"
                         >
                             <Download className="h-4 w-4 mr-2" />
-                            {isExporting ? 'Generating...' : 'Download PDF'}
+                            {isExporting ? t.chat.triage.generating : t.chat.triage.downloadPdf}
                         </Button>
                         {result.severity === 'Emergency' && (
                             <Button
@@ -215,7 +219,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                                 className="col-span-2 justify-start font-semibold"
                             >
                                 <Phone className="h-4 w-4 mr-2" />
-                                Call Emergency (911)
+                                {t.chat.triage.callEmergency}
                             </Button>
                         )}
                     </div>
@@ -226,7 +230,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                     <div className="p-4 bg-muted/30 border-t">
                         <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                             <span>💡</span>
-                            While You Wait:
+                            {t.chat.triage.whileYouWait}:
                         </p>
                         <ul className="space-y-1.5 text-sm text-muted-foreground">
                             {result.whileYouWait.map((tip, index) => (
@@ -248,7 +252,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                             onClick={handleShare}
                         >
                             <Share2 className="h-4 w-4 mr-2" />
-                            Share
+                            {t.chat.triage.share}
                         </Button>
                         <Button
                             variant="secondary"
@@ -257,7 +261,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                             disabled={isExporting}
                         >
                             <Download className="h-4 w-4 mr-2" />
-                            {isExporting ? 'Exporting...' : 'Export Result'}
+                            {isExporting ? t.chat.triage.exporting : t.chat.triage.exportResult}
                         </Button>
                     </div>
                     <Button
@@ -265,7 +269,7 @@ export function EnhancedTriageResult({ result, patientData, onNewAssessment }: E
                         size="sm"
                         onClick={onNewAssessment}
                     >
-                        Start New Assessment
+                        {t.chat.triage.startNew}
                     </Button>
                 </div>
             </Card>

@@ -9,6 +9,8 @@ import { AnimatePresence } from 'framer-motion';
 import { useChat, type Message } from '@/hooks/useChat';
 import { useSessionStore } from '@/lib/sessionStore';
 import { useAssessmentStore } from '@/lib/assessmentStore';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 import { generateSmartReplies } from '@/components/molecules/QuickReplies';
 import { ContextSummary } from '@/components/molecules/ContextSummary';
@@ -31,6 +33,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
 
     const { getCurrentSession, setCurrentSession, currentSessionId } = useSessionStore();
     const currentSession = getCurrentSession();
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     // Sync sessionId from URL with store
     useEffect(() => {
@@ -57,9 +61,9 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     useEffect(() => {
         if (!isLoading) return;
         const steps = [
-            'Analyzing symptoms...',
-            'Checking medical guidelines...',
-            'Formulating response...'
+            t.chat.thinking.analyzing,
+            t.chat.thinking.checking,
+            t.chat.thinking.formulating
         ];
         let i = 0;
         setThinkingText(steps[0]);
@@ -85,7 +89,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                 {
                     id: 'welcome',
                     role: 'assistant',
-                    content: "Hello! I've reviewed your information. Let me ask a few follow-up questions to better understand your condition. Can you tell me more about what you're feeling?",
+                    content: t.chat.welcome,
                     timestamp: new Date().toISOString(),
                     status: 'sent',
                 },
@@ -103,7 +107,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     };
 
     const handleExport = () => {
-        toast.info('Export functionality coming soon');
+        toast.info(t.chat.header.exportComingSoon);
     };
 
     // --- Assessment Store Draft Logic ---
@@ -137,8 +141,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const handleAttachAssessment = async () => {
         // Construct a message with the assessment data
         const parts = selectedParts.length ? `Parts: ${selectedParts.join(', ')}` : '';
-        const pain = `Pain level: ${painLevel}`;
-        const dur = duration ? `Duration: ${duration}` : '';
+        const pain = `${t.chat.assessment.pain} level: ${painLevel}`;
+        const dur = duration ? `${t.chat.assessment.duration}: ${duration}` : '';
         const img = image ? 'Image attached' : '';
         const content = [parts, pain, dur, img].filter(Boolean).join(' | ');
 
@@ -159,9 +163,9 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="font-semibold">Chat Consultation</h2>
+                        <h2 className="font-semibold">{t.chat.header.title}</h2>
                         <p className="text-xs text-muted-foreground">
-                            Session: {sessionId || 'New'}
+                            {t.chat.header.session}: {sessionId || t.chat.header.new}
                         </p>
                     </div>
                 </div>
@@ -172,8 +176,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleNewSession}>New Assessment</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExport}>Export Conversation</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleNewSession}>{t.chat.header.newAssessment}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExport}>{t.chat.header.export}</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </header>
@@ -257,13 +261,13 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     {showAssessmentDraft && !triageResult && (
                         <div className="mx-4 mb-2 p-3 bg-accent/50 backdrop-blur-md border rounded-lg shadow-lg flex items-center justify-between animate-in slide-in-from-bottom-2 fade-in duration-300">
                             <div className="flex flex-col text-sm">
-                                <span className="font-medium text-foreground">Assessment Update Pending</span>
+                                <span className="font-medium text-foreground">{t.chat.assessment.pending}</span>
                                 <span className="text-xs text-muted-foreground">
-                                    {selectedParts.length} areas • Pain: {painLevel} • {duration || 'No duration'}
+                                    {selectedParts.length} {t.chat.assessment.areas} • {t.chat.assessment.pain}: {painLevel} • {duration || t.chat.assessment.noDuration}
                                 </span>
                             </div>
                             <Button size="sm" onClick={handleAttachAssessment} className="ml-4">
-                                Send Update
+                                {t.chat.assessment.send}
                             </Button>
                         </div>
                     )}
@@ -274,6 +278,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     onSend={handleSend}
                     disabled={isLoading}
                     suggestedReplies={isLoading ? [] : quickReplySuggestions}
+                    placeholder={t.chat.input.placeholder}
                 />
             </div>
         </div>
