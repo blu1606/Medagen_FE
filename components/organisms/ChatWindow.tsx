@@ -152,42 +152,42 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     };
 
     const handleGenerateReport = async () => {
-        if (!sessionId) {
+        // Use session ID from triageResult (backend response) if available, otherwise use sessionId from props
+        const reportSessionId = triageResult?.session_id || sessionId;
+
+        if (!reportSessionId) {
             toast.error('Session ID is required to generate report');
             return;
         }
 
         setIsGeneratingReport(true);
         try {
-            // Try to get report from API first
-            const apiReport = await reportService.getReport(sessionId, 'full');
-            
-            // Store markdown for display
+            toast.info('Generating comprehensive report...');
+
+            // Get full report from backend API using the correct session ID
+            const apiReport = await reportService.getReport(reportSessionId, 'full');
+
+            // Store markdown for display in the markdown tab
             setReportMarkdown(apiReport.report.report_markdown);
-            
-            // If we have triageResult, merge with API data
-            // Otherwise, create a basic report from API data
+
+            // Generate complete report with local data + API data
             if (triageResult) {
-                const report = generateCompleteReport(triageResult, sessionId);
-                // Merge API markdown into report
-                setReportData({
-                    ...report,
-                    // You can add API data to report here if needed
-                });
+                const localReport = generateCompleteReport(triageResult, reportSessionId);
+                setReportData(localReport);
+                toast.success('Report generated successfully!');
             } else {
-                // Create a minimal report structure from API data
-                // This is a fallback if triageResult is not available
-                toast.info('Report generated from session data');
+                // If no triageResult, still show the markdown from API
+                toast.success('Report generated from session data');
             }
-            
+
             setShowReportModal(true);
         } catch (error: any) {
             console.error('Failed to generate report from API:', error);
-            
+
             // Fallback to local generation if API fails
-            if (triageResult && sessionId) {
-                toast.warning('Using local report generation (API unavailable)');
-                const report = generateCompleteReport(triageResult, sessionId);
+            if (triageResult && reportSessionId) {
+                toast.warning('API unavailable - using local report generation');
+                const report = generateCompleteReport(triageResult, reportSessionId);
                 setReportData(report);
                 setShowReportModal(true);
             } else {
@@ -328,15 +328,16 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     </div>
                 )}
 
-                {/* Triage Report Button - Moved to Assessment Panel */}
-                {/* {triageResult && !isLoading && (
+                {/* Triage Report Button */}
+                {triageResult && !isLoading && (
                     <div className="flex justify-center mt-4 animate-in fade-in slide-in-from-bottom-4">
                         <GenerateReportButton
                             onClick={handleGenerateReport}
+                            isLoading={isGeneratingReport}
                             className="shadow-md hover:shadow-lg transition-all"
                         />
                     </div>
-                )} */}
+                )}
 
                 <div ref={messagesEndRef} />
             </div>
