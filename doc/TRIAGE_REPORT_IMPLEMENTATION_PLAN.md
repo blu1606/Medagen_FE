@@ -78,79 +78,129 @@ interface TriageResult {
 
 ---
 
-## Đề xuất Giải pháp - SIMPLIFIED APPROACH
+## Đề xuất Giải pháp - USER-TRIGGERED APPROACH
 
-### Ý tưởng Cốt lõi (Đơn giản hóa)
+### Ý tưởng Cốt lõi (Đơn giản & Rõ ràng)
 
 > [!NOTE]
-> **Nguyên tắc đơn giản:**
+> **Nguyên tắc:**
 > 
-> Khi AI có **Đủ THÔNG TIN** để đưa ra recommendation cụ thể → Tạo **Triage Report đầy đủ**
+> User **chủ động click button** "Generate Triage Report" → Hệ thống tạo **Complete Triage Report**
 
-**"Đủ thông tin" nghĩa là:**
-- AI đã phân tích được triệu chứng
-- AI có thể đưa ra triage level (emergency/urgent/routine/self-care)
-- AI có recommendation hành động cụ thể
+**Tại sao dùng button thay vì AI auto-detect?**
+- ✅ **Rõ ràng**: User biết chính xác khi nào có report
+- ✅ **Kiểm soát**: User quyết định khi nào cần report chi tiết
+- ✅ **Đơn giản**: Không cần logic phức tạp để đoán "đủ thông tin"
+- ✅ **UX tốt**: Không có "surprise behavior" từ AI
 
-**Không đủ thông tin:**
-- Câu hỏi giáo dục chung chung ("Sức khỏe là gì?")
-- Câu hỏi out-of-scope (BHYT, thủ tục)
-- Cần hỏi lại để làm rõ
+### User Flow
+
+```mermaid
+graph TD
+    A[User nhập triệu chứng] --> B[AI trả lời triage cơ bản]
+    B --> C{User muốn report chi tiết?}
+    C -->|Yes| D[Click button 'Generate Report']
+    C -->|No| E[Tiếp tục chat bình thường]
+    D --> F[Hệ thống tạo Complete Report]
+    F --> G[Hiển thị: Location + Timeline + PDF + Checklist]
+```
 
 ### Triage Report Components
 
-**Khi trigger, Triage Report bao gồm:**
+**Khi user click button, Report bao gồm:**
 
-| Component | Mô tả |
-|-----------|-------|
-| **Symptom Analysis** | Phân tích triệu chứng chi tiết |
-| **Triage Level** | Emergency/Urgent/Routine/Self-care |
-| **Red Flags** | Các dấu hiệu cảnh báo |
-| **CV Findings** | Kết quả phân tích ảnh (nếu có) |
-| **Recommendations** | Hành động cụ thể + timeline |
-| **📍 Location** | Danh sách cơ sở y tế gần nhất |
-| **📄 PDF Export** | Khả năng export report dạng PDF |
-| **Follow-up** | Checklist theo dõi |
+| Component | Mô tả | Trigger |
+|-----------|-------|---------|
+| **Symptom Analysis** | Phân tích triệu chứng chi tiết | Auto từ conversation |
+| **Triage Level** | Emergency/Urgent/Routine/Self-care | Từ AI response |
+| **Red Flags** | Các dấu hiệu cảnh báo | Từ AI response |
+| **CV Findings** | Kết quả phân tích ảnh (nếu có) | Từ AI response |
+| **Recommendations** | Hành động cụ thể + timeline | Enhanced từ AI |
+| **📍 Location** | Danh sách cơ sở y tế gần nhất | **API call khi generate** |
+| **📄 PDF Export** | Khả năng export report dạng PDF | **Generated on-demand** |
+| **Follow-up** | Checklist theo dõi | **Generated on-demand** |
 
 ---
 
 ## Proposed Changes
+
+### Component: Backend API
+
+#### [NEW] `/api/triage/generate-report` endpoint
+
+**Purpose**: API endpoint để generate complete triage report khi user click button
+
+**Method**: `POST`
+
+**Request Body:**
+```typescript
+{
+  session_id: string;          // Để lấy conversation context
+  message_id?: string;         // Message cụ thể để generate report
+  user_location?: {            // Optional: User location để tìm cơ sở y tế gần
+    lat: number;
+    lng: number;
+  }
+}
+```
+
+**Response:**
+```typescript
+{
+  report_id: string;
+  report: CompleteTriageReport;  // Full report with all data
+}
+```
+
+---
 
 ### Component: AI Agent Core
 
 #### [MODIFY] [agent-executor.ts](file:///D:/Project/Medagen_master/Medagen/src/agent/agent-executor.ts)
 
 **Changes:**
-- Thêm method `hasEnoughInformation()` - Logic đơn giản để kiểm tra có đủ info
-- Thêm method `generateCompleteTriageReport()` - Tạo report đầy đủ với location + PDF
-- Tích hợp **Maps service** để lấy vị trí cơ sở y tế
-- Cập nhật response để bao gồm location data
+- Thêm method `generateCompleteTriageReport()` - Tạo report từ conversation context
+- **Không cần** logic "hasEnoughInformation" nữa - user trigger rồi
+- Method nhận `sessionId` và `messageId` để extract data
 
 **Implementation Details:**
 ```typescript
-private hasEnoughInformation(
-  intent: IntentClassification,
-  triageResult?: TriageRulesResult
-): boolean {
-  // Simple check:
-  // - Not out_of_scope
-  // - Not needs_clarification
-  // - Has triage_level determined
-  return intent.type !== 'out_of_scope' && 
-         !intent.needsClarification &&
-         triageResult !== undefined;
-}
-
-private async generateCompleteTriageReport(
-  userText: string,
-  triageResult: TriageRulesResult,
-  cvResult?: CVResult,
-  guidelines?: any[]
+async generateCompleteTriageReport(
+  sessionId: string,
+  messageId?: string,
+  userLocation?: { lat: number; lng: number }
 ): Promise<CompleteTriageReport> {
-  // 1. Build core report
-  // 2. Get nearby medical facilities
-  // 3. Add PDF export metadata
-  // 4. Return complete report
+  // 1. Get conversation context from session
+  const conversation = await this.getConversation(sessionId);
+  
+  // 2. Extract triage data from last AI response
+  const triageData = this.extractTriageData(conversation, messageId);
+  
+  // 3. Get nearby medical facilities
+  const facilities = await this.locationService.findNearbyFacilities(
+    userLocation,
+    triageData.triage_level
+  );
+  
+  // 4. Generate timeline & checklist
+  const followUp = this.generateFollowUp(triageData);
+  
+  // 5. Prepare PDF export metadata
+  const pdfExport = await this.pdfService.preparePDFExport(triageData);
+  
+  // 6. Combine all into complete report
+  return {
+    report_type: 'complete',
+    ...triageData,
+    nearby_facilities: facilities,
+    pdf_export: pdfExport,
+    follow_up: followUp,
+    metadata: {
+      generated_at: new Date().toISOString(),
+      report_id: generateReportId(),
+      session_id: sessionId
+    }
+  };
 }
 ```
 
@@ -295,26 +345,58 @@ export interface ActionTimeline {
 
 ### Component: Frontend Display
 
+#### [NEW] [GenerateReportButton.tsx](file:///D:/Project/Medagen_master/Medagen/frontend/components/atoms/GenerateReportButton.tsx)
+
+**Purpose**: Button để trigger triage report generation
+
+**Placement**: Hiển thị sau mỗi AI response có triage_level
+
+**Props:**
+```typescript
+interface GenerateReportButtonProps {
+  sessionId: string;
+  messageId: string;
+  triageLevel: TriageLevel;
+  onReportGenerated: (report: CompleteTriageReport) => void;
+}
+```
+
+**Features:**
+- Icon + text: "📋 Generate Full Report"
+- Loading state khi đang generate
+- Tooltip: "Get detailed report with nearby facilities and PDF export"
+- Only show quando triage_level !== 'routine' (hoặc luôn show)
+- Click → call API → show report modal
+
+---
+
 #### [NEW] [CompleteTriageReportCard.tsx](file:///D:/Project/Medagen_master/Medagen/frontend/components/organisms/CompleteTriageReportCard.tsx)
 
 **Purpose**: Component hiển thị complete triage report với tất cả tính năng
 
+**Display Mode**: Modal hoặc Full-page overlay
+
 **Features:**
-- **Triage Summary Section**: Level, red flags, summary
+- **Header Section**: Report ID, timestamp, close button
+- **Triage Summary Section**: Level badge, red flags, symptom summary
 - **CV Findings Section**: Hiển thị kết quả phân tích ảnh với confidence
-- **Recommendations Section**: Action items với timeline
+- **Recommendations Section**: Action items với timeline cards
 - **📍 Location Map Section**: 
   - Interactive map với markers
-  - List cơ sở y tế gần nhất
-  - Directions button
-  - Filter theo loại cơ sở
-- **📄 PDF Export Button**: 
-  - Generate & download PDF
-  - QR code để share
-  - Print preview
-- **Follow-up Checklist**: Checkbox list để user theo dõi
+  - List cơ sở y tế gần nhất (sortable by distance)
+  - "Get Directions" button cho mỗi facility
+  - Filter theo loại cơ sở (emergency/hospital/clinic)
+- **📄 PDF Export Section**: 
+  - "Download PDF" button
+  - "Share via Email" option
+  - QR code để share (collapsible)
+- **Follow-up Checklist Section**: 
+  - Interactive checkboxes
+  - Save to local storage
+  - "Add to Calendar" integration
+- **Footer**: Print button, Share button
 - **Responsive Design**: Mobile-friendly
-- **Accessibility**: Screen reader support
+- **Accessibility**: Keyboard navigation, screen reader support
 
 ---
 
@@ -532,28 +614,60 @@ npm test src/__tests__/integration/triage-report.test.ts
 ## User Review Required
 
 > [!IMPORTANT]
-> **New Features to Add**
+> **New Features & Dependencies**
 > 
-> - **PDF Export**: Cần library nào? (pdfkit, puppeteer, jsPDF?)
-> - **Maps Integration**: Đã có Maps tool rồi - cần API key Google Maps?
-> - **Location Data**: Cần database cơ sở y tế Việt Nam hoặc dùng Google Places API?
+> - **PDF Library**: Recommend `pdfkit` (server-side) hoặc `jsPDF` (client-side)?
+> - **Maps Integration**: Cần confirm có Google Maps API key chưa?
+> - **Location Data**: Dùng Google Places API hay cần database riêng cho cơ sở y tế VN?
+> - **User Location**: Có request browser geolocation permission không?
 
 > [!NOTE]
-> **Simple Logic = No Breaking Changes**
+> **Benefits of Button Approach**
 > 
-> - Response vẫn là `TriageResult` nhưng extend với thêm fields
-> - Backward compatible
-> - Frontend có thể opt-in hiển thị location/PDF
-> - Câu hỏi out-of-scope vẫn trả về response đơn giản như cũ
+> - ✅ **User Control**: User chủ động trigger, không bị surprise
+> - ✅ **Clear UX**: Rõ ràng khi nào có report chi tiết
+> - ✅ **Performance**: Chỉ generate khi cần, tiết kiệm API calls
+> - ✅ **No AI Guessing**: Không cần logic phức tạp để đoán "đủ thông tin"
+> - ✅ **Backward Compatible**: Chat flow hiện tại không thay đổi
 
 ---
 
-## Next Steps
+## Summary
 
-Sau khi plan được approve:
-1. Implement backend decision logic
-2. Create detailed report generation service
-3. Update type definitions
-4. Build frontend component
-5. Write tests
-6. Document usage examples
+### Key Changes from Original Plan
+
+| Aspect | Original (AI Auto-detect) | New (Button-triggered) |
+|--------|---------------------------|------------------------|
+| **Trigger** | AI tự quyết định | User click button |
+| **Logic Complexity** | Cần detect "đủ thông tin" | Không cần detect |
+| **UX** | Có thể confusing | Rõ ràng, predictable |
+| **Implementation** | Phức tạp hơn | Đơn giản hơn |
+| **User Control** | Thấp | Cao |
+
+### Implementation Flow
+
+```
+1. User chat với AI về triệu chứng
+   ↓
+2. AI trả lời triage (emergency/urgent/routine/self-care)
+   ↓
+3. UI hiển thị button "📋 Generate Full Report"
+   ↓
+4. User click button (optional)
+   ↓
+5. Frontend call API POST /api/triage/generate-report
+   ↓
+6. Backend:
+   - Extract triage data từ session
+   - Get nearby facilities
+   - Generate PDF export metadata
+   - Create follow-up checklist
+   ↓
+7. Return CompleteTriageReport
+   ↓
+8. Frontend hiển thị report modal với:
+   - Location map
+   - PDF download
+   - Follow-up checklist
+   - Timeline
+```
