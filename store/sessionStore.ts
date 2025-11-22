@@ -46,21 +46,23 @@ export const useSessionStore = create<SessionStore>()(
             isLoading: false,
             error: null,
 
-            // Create session with backend API call
+            // Create session locally without backend API call
+            // Backend will be called when user sends first message
             createSession: async (patientData) => {
                 set({ isLoading: true, error: null });
 
                 try {
-                    const response = await sessionService.create({ patient_data: patientData });
+                    // Generate local session ID
+                    const sessionId = `session-${Date.now()}`;
 
-                    // Convert backend response to ConversationSession format
+                    // Create session locally only
                     const newSession: ConversationSession = {
-                        id: response.id,
-                        title: patientData?.chiefComplaint || 'New Consultation',
-                        timestamp: response.created_at,
+                        id: sessionId,
+                        title: patientData?.chiefComplaint || patientData?.name || 'New Consultation',
+                        timestamp: new Date().toISOString(),
                         lastMessage: 'Started',
                         status: 'active',
-                        patientData: response.patient_data,
+                        patientData: patientData,
                     };
 
                     set((state) => ({

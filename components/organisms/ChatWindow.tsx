@@ -37,7 +37,6 @@ interface ChatWindowProps {
 export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps) {
     const router = useRouter();
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const [sendingInitialData, setSendingInitialData] = useState(false);
 
     const { getCurrentSession, setCurrentSession, currentSessionId, updateSession, fetchSessions } = useSessionStore();
     const currentSession = getCurrentSession();
@@ -100,54 +99,23 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
         scrollToBottom();
     }, [messages, isLoading, triageResult]);
 
-    // Auto-send initial patient context from onboarding
+
+    // Show greeting message for new sessions
     useEffect(() => {
         const hasSessionData = currentSession?.patientData;
         const hasNoMessages = messages.length === 0;
-        const initialSentKey = `initial_sent_${sessionId}`;
-        const hasNotSentInitial = !localStorage.getItem(initialSentKey);
 
-        if (sessionId && hasSessionData && hasNoMessages && hasNotSentInitial && !isLoading) {
-            const sendInitialData = async () => {
-                // Format and send initial context
-                setSendingInitialData(true);
-                const initialContext = formatInitialPatientContext(currentSession!.patientData!);
-
-                let imageFile: File | undefined;
-                const symptomImage = currentSession!.patientData!.symptomImage;
-
-                if (symptomImage && typeof symptomImage === 'string' && symptomImage.startsWith('data:')) {
-                    try {
-                        const res = await fetch(symptomImage);
-                        const blob = await res.blob();
-                        imageFile = new File([blob], "symptom_image.jpg", { type: blob.type });
-                    } catch (e) {
-                        console.error("Failed to convert base64 to file", e);
-                    }
-                }
-
-                try {
-                    await sendMessage(initialContext, imageFile);
-                    // Mark as sent to prevent duplicate sends
-                    localStorage.setItem(initialSentKey, 'true');
-
-                    // Clear temporary image from session after sending
-                    if (symptomImage && currentSession?.patientData) {
-                        updateSession(sessionId, {
-                            patientData: {
-                                ...currentSession.patientData,
-                                symptomImage: undefined
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.error('Failed to send initial context:', error);
-                } finally {
-                    setSendingInitialData(false);
-                }
-            };
-
-            sendInitialData();
+        if (sessionId && hasSessionData && hasNoMessages) {
+            // Show client-side greeting message (not from server)
+            setMessages([
+                {
+                    id: 'greeting',
+                    role: 'assistant',
+                    content: t.chat.welcome,
+                    timestamp: new Date().toISOString(),
+                    status: 'sent',
+                },
+            ]);
         } else if (!sessionId || !hasSessionData) {
             // Show welcome message for sessions without patient data
             if (messages.length === 0 && !sessionId) {
@@ -162,11 +130,45 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                 ]);
             }
         }
-    }, [sessionId, currentSession, messages.length, isLoading]);
+    }, [sessionId, currentSession, messages.length]);
 
     const handleSend = async (message: string, image?: File) => {
         if (isLoading) return;
-        await sendMessage(message, image);
+
+        // Check if this is the first user message (only greeting exists)
+        const isFirstMessage = messages.length === 1 && messages[0].id === 'greeting';
+        const hasIntakeData = currentSession?.patientData;
+
+        let finalMessage = message;
+        let finalImage = image;
+
+        // Prepend intake context to first message
+        if (isFirstMessage && hasIntakeData && sessionId) {
+            const intakeContext = formatInitialPatientContext(currentSession!.patientData!);
+            finalMessage = `${intakeContext}\n\n${message}`;
+
+            // Handle image from intake if exists
+            const symptomImage = currentSession!.patientData!.symptomImage;
+            if (symptomImage && typeof symptomImage === 'string' && symptomImage.startsWith('data:') && !image) {
+                try {
+                    const res = await fetch(symptomImage);
+                    const blob = await res.blob();
+                    finalImage = new File([blob], "symptom_image.jpg", { type: blob.type });
+
+                    // Clear symptom image after attaching
+                    updateSession(sessionId, {
+                        patientData: {
+                            ...currentSession!.patientData!,
+                            symptomImage: undefined
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed to convert symptom image", e);
+                }
+            }
+        }
+
+        await sendMessage(finalMessage, finalImage);
     };
 
     const handleNewSession = () => {
