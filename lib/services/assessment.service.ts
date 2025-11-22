@@ -6,23 +6,29 @@ const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.
 
 export const assessmentService = {
     async saveAssessment(data: Omit<AssessmentSnapshot, 'id' | 'timestamp'>) {
-        if (USE_MOCK) {
-            return mockBackend.assessment.save(data);
+        try {
+            if (USE_MOCK) {
+                return await mockBackend.assessment.save(data);
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/assessment/save`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to save assessment: ${response.status} - ${errorText}`);
+            }
+
+            return response.json();
+        } catch (error: any) {
+            console.error('[Assessment Service] Save error:', error);
+            throw new Error(error.message || 'Failed to save assessment');
         }
-
-        const response = await fetch(`${API_BASE_URL}/api/assessment/save`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to save assessment');
-        }
-
-        return response.json();
     },
 
     async loadAssessment() {

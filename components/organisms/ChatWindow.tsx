@@ -259,7 +259,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
             <div className="sticky bottom-0 z-20 flex flex-col">
                 {/* Assessment Draft Popup */}
                 <AnimatePresence>
-                    {showAssessmentDraft && !triageResult && (
+                    {showAssessmentDraft && (
                         <div className="mx-4 mb-2 p-3 bg-accent/50 backdrop-blur-md border rounded-lg shadow-lg flex items-center justify-between animate-in slide-in-from-bottom-2 fade-in duration-300">
                             <div className="flex flex-col text-sm">
                                 <span className="font-medium text-foreground">{t.chat.assessment.pending}</span>
@@ -273,7 +273,6 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         </div>
                     )}
                 </AnimatePresence>
-
 
                 <ChatInput
                     onSend={handleSend}

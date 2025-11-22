@@ -42,25 +42,20 @@ export function AssessmentPanel({ className }: { className?: string }) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const snapshotData = {
+            // Create snapshot and save to local history (persisted via zustand)
+            const snapshot = {
+                id: crypto.randomUUID(),
                 selectedParts,
                 painLevel,
                 duration,
                 image,
-            };
-
-            // Save to API
-            await assessmentService.saveAssessment(snapshotData);
-
-            // Add to local history
-            const snapshot = {
-                id: crypto.randomUUID(),
-                ...snapshotData,
                 timestamp: new Date().toISOString(),
             };
+
+            // Add to local history (automatically persisted to localStorage)
             addSnapshot(snapshot);
 
-            toast.success('Assessment saved successfully');
+            toast.success('Assessment saved to local storage');
         } catch (error) {
             console.error('Failed to save assessment:', error);
             toast.error('Failed to save assessment');
