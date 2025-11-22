@@ -105,7 +105,7 @@ export function AssessmentPanel({ className }: { className?: string }) {
             {/* Content – hidden when collapsed */}
             {!collapsed && (
                 <div className="flex-1 overflow-y-auto p-2 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <Tabs activeValue={activeTab} className="w-full h-full flex flex-col">
+                    <Tabs className="w-full h-full flex flex-col">
                         <TabsList className="grid w-full grid-cols-2 shrink-0">
                             <TabsTrigger value="model" activeValue={activeTab} onValueChange={setActiveTab}>Model</TabsTrigger>
                             <TabsTrigger value="assess" activeValue={activeTab} onValueChange={setActiveTab}>Assess</TabsTrigger>
