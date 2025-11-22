@@ -9,9 +9,10 @@ import { createSupabaseClient } from './supabase';
  * Safe Supabase query wrapper with error handling
  */
 export async function safeSupabaseQuery<T>(
-  query: Promise<{ data: T | null; error: any }>
+  query: Promise<{ data: T | null; error: any }> | any
 ): Promise<T | null> {
   try {
+    // If query is a query builder, it will have a then method but we need to await it
     const { data, error } = await query;
 
     if (error) {
