@@ -13,6 +13,8 @@ interface SliderProps {
     value: number[];
     /** Callback when the value changes */
     onValueChange: (value: number[]) => void;
+    /** Optional class name for styling */
+    className?: string;
 }
 
 /**
@@ -26,6 +28,7 @@ export function Slider({
     step = 1,
     value,
     onValueChange,
+    className,
 }: SliderProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = Number(e.target.value);
@@ -40,7 +43,7 @@ export function Slider({
             step={step}
             value={value[0]}
             onChange={handleChange}
-            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+            className={`w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary ${className || ''}`}
         />
     );
 }

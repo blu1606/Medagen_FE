@@ -15,7 +15,7 @@ interface PatientContextData {
     chronicConditions?: string[];
     allergies?: string[];
     currentMedications?: string;
-    symptomImage?: File;
+    symptomImage?: File | string;
 }
 
 export function formatInitialPatientContext(patientData: PatientContextData): string {

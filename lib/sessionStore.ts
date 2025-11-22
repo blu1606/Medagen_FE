@@ -23,7 +23,7 @@ export interface ConversationSession {
         allergies?: string[];
         currentMedications?: string;
         severity?: 'mild' | 'moderate' | 'severe';
-        symptomImage?: File;  // Temporary storage for initial send
+        symptomImage?: string;  // Base64 string for persistence
     };
     triageResult?: {
         severity: string;

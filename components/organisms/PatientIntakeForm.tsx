@@ -88,15 +88,20 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
     const [uploadingImage, setUploadingImage] = useState(false);
 
     const form = useForm<PatientIntakeFormValues>({
-        resolver: zodResolver(patientIntakeSchema),
+        resolver: zodResolver(patientIntakeSchema) as any,
         defaultValues: {
             name: '',
+            age: '',
+            gender: undefined,
             chronic_conditions: [],
             allergies: [],
             current_medications: '',
             main_complaint: '',
             body_parts: [],
             pain_level: 0,
+            duration: undefined,
+            severity: undefined,
+            symptom_image: undefined,
         },
     });
 
@@ -139,6 +144,23 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
             // Clear draft
             localStorage.removeItem('patient_intake_draft');
 
+            // Convert image to Base64 for persistence
+            let imageBase64: string | undefined;
+            if (data.symptom_image instanceof File) {
+                try {
+                    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve(reader.result as string);
+                        reader.onerror = error => reject(error);
+                    });
+                    imageBase64 = await toBase64(data.symptom_image);
+                } catch (error) {
+                    console.error("Failed to convert image to base64", error);
+                    toast.error("Failed to process image");
+                }
+            }
+
             // Create session with patient data
             const { createSession } = useSessionStore.getState();
             const sessionId = createSession({
@@ -153,7 +175,7 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
                 chronicConditions: data.chronic_conditions || [],
                 allergies: data.allergies || [],
                 currentMedications: data.current_medications,
-                symptomImage: data.symptom_image  // Temporarily store for initial send
+                symptomImage: imageBase64  // Store as Base64 string
             });
 
             if (propOnSubmit) {

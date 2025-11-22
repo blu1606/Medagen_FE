@@ -13,14 +13,16 @@ import dynamic from 'next/dynamic';
 import { ArrowLeft, Loader2, Check } from 'lucide-react';
 import Link from 'next/link';
 
-const AdvancedBodyMap = dynamic(
-    () => import('@/components/organisms/AdvancedBodyMap').then(mod => mod.AdvancedBodyMap),
-    { ssr: false }
-);
+import { ImageUpload } from '@/components/molecules/ImageUpload';
 
 import { useLanguageStore } from '@/store/languageStore';
 import { translations } from '@/lib/translations';
 import { useCreateSession } from '@/hooks/useStores';
+
+const AdvancedBodyMap = dynamic(
+    () => import('@/components/organisms/AdvancedBodyMap').then(mod => mod.AdvancedBodyMap),
+    { ssr: false }
+);
 
 type IntakeData = {
     name: string;
@@ -31,6 +33,7 @@ type IntakeData = {
     bodyParts: string[];
     painLevel: number;
     duration: string;
+    symptomImage: File | null;
 };
 
 export function WizardIntake() {
@@ -45,6 +48,7 @@ export function WizardIntake() {
         bodyParts: [],
         painLevel: 0,
         duration: '',
+        symptomImage: null,
     });
     const [bodyMapSide, setBodyMapSide] = useState<'front' | 'back'>('front');
     const { language } = useLanguageStore();
@@ -66,6 +70,17 @@ export function WizardIntake() {
         }
 
         try {
+            let imageBase64: string | undefined;
+            if (data.symptomImage) {
+                const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = error => reject(error);
+                });
+                imageBase64 = await toBase64(data.symptomImage);
+            }
+
             await createSession({
                 name: data.name,
                 age: typeof data.age === 'number' ? data.age : parseInt(data.age),
@@ -76,6 +91,7 @@ export function WizardIntake() {
                 duration: data.duration,
                 chiefComplaint: data.chiefComplaint,
                 triageLevel: 'routine', // Default to routine
+                symptomImage: imageBase64,
             });
         } catch (error) {
             console.error('Failed to create session:', error);
@@ -217,6 +233,14 @@ export function WizardIntake() {
                                         <span className="font-medium text-foreground">{data.painLevel} / 10</span>
                                         <span>{t.intake.form.symptoms.painLevel.worstPain}</span>
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>{t.intake.details.assessmentPanel.imageUpload.label}</Label>
+                                    <ImageUpload
+                                        value={data.symptomImage}
+                                        onChange={(file) => updateData({ symptomImage: file })}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

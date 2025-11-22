@@ -94,30 +94,46 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
         const hasNotSentInitial = !localStorage.getItem(initialSentKey);
 
         if (sessionId && hasSessionData && hasNoMessages && hasNotSentInitial && !isLoading) {
-            // Format and send initial context
-            setSendingInitialData(true);
-            const initialContext = formatInitialPatientContext(currentSession!.patientData!);
-            const image = currentSession!.patientData!.symptomImage;
+            const sendInitialData = async () => {
+                // Format and send initial context
+                setSendingInitialData(true);
+                const initialContext = formatInitialPatientContext(currentSession!.patientData!);
 
-            sendMessage(initialContext, image).then(() => {
-                // Mark as sent to prevent duplicate sends
-                localStorage.setItem(initialSentKey, 'true');
+                let imageFile: File | undefined;
+                const symptomImage = currentSession!.patientData!.symptomImage;
 
-                // Clear temporary image from session after sending
-                if (image && currentSession?.patientData) {
-                    updateSession(sessionId, {
-                        patientData: {
-                            ...currentSession.patientData,
-                            symptomImage: undefined
-                        }
-                    });
+                if (symptomImage && typeof symptomImage === 'string' && symptomImage.startsWith('data:')) {
+                    try {
+                        const res = await fetch(symptomImage);
+                        const blob = await res.blob();
+                        imageFile = new File([blob], "symptom_image.jpg", { type: blob.type });
+                    } catch (e) {
+                        console.error("Failed to convert base64 to file", e);
+                    }
                 }
-            }).catch((error) => {
-                console.error('Failed to send initial context:', error);
-                // Don't mark as sent if failed, allow retry
-            }).finally(() => {
-                setSendingInitialData(false);
-            });
+
+                try {
+                    await sendMessage(initialContext, imageFile);
+                    // Mark as sent to prevent duplicate sends
+                    localStorage.setItem(initialSentKey, 'true');
+
+                    // Clear temporary image from session after sending
+                    if (symptomImage && currentSession?.patientData) {
+                        updateSession(sessionId, {
+                            patientData: {
+                                ...currentSession.patientData,
+                                symptomImage: undefined
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to send initial context:', error);
+                } finally {
+                    setSendingInitialData(false);
+                }
+            };
+
+            sendInitialData();
         } else if (!sessionId || !hasSessionData) {
             // Show welcome message for sessions without patient data
             if (messages.length === 0 && !sessionId) {
