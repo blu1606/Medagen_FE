@@ -3,6 +3,10 @@ import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
 
 interface MessageBubbleProps {
     message: {
@@ -51,7 +55,45 @@ export function MessageBubble({ message, patientName = 'User' }: MessageBubblePr
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
             )}>
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {isUser ? (
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                    <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeHighlight]}
+                            components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="mb-2 ml-4 list-disc">{children}</ul>,
+                                ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                                li: ({ children }) => <li className="mb-1">{children}</li>,
+                                code: ({ inline, children, ...props }: any) =>
+                                    inline ? (
+                                        <code className="px-1 py-0.5 rounded bg-muted-foreground/20 text-xs font-mono" {...props}>
+                                            {children}
+                                        </code>
+                                    ) : (
+                                        <code className="block p-2 rounded bg-muted-foreground/10 text-xs font-mono overflow-x-auto" {...props}>
+                                            {children}
+                                        </code>
+                                    ),
+                                pre: ({ children }) => <pre className="mb-2 overflow-x-auto">{children}</pre>,
+                                h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                                em: ({ children }) => <em className="italic">{children}</em>,
+                                a: ({ children, href }) => (
+                                    <a href={href} className="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">
+                                        {children}
+                                    </a>
+                                ),
+                            }}
+                        >
+                            {message.content}
+                        </ReactMarkdown>
+                    </div>
+                )}
 
                 {message.image_url && (
                     <img

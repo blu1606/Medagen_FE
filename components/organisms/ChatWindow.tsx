@@ -107,8 +107,26 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     };
 
     // --- Assessment Store Draft Logic ---
-    const { selectedParts, painLevel, duration, image } = useAssessmentStore();
+    const { selectedParts, painLevel, duration, image, setParts, setPain, setDuration } = useAssessmentStore();
     const [showAssessmentDraft, setShowAssessmentDraft] = useState(false);
+
+    // Sync session patient data to assessment store on load
+    useEffect(() => {
+        if (currentSession?.patientData) {
+            const { bodyParts, painLevel: sessionPain, duration: sessionDuration } = currentSession.patientData;
+
+            // Only sync if assessment store is empty (avoid overwriting user changes)
+            if (selectedParts.length === 0 && bodyParts && bodyParts.length > 0) {
+                setParts(bodyParts);
+            }
+            if (painLevel === 0 && sessionPain) {
+                setPain(sessionPain);
+            }
+            if (!duration && sessionDuration) {
+                setDuration(sessionDuration);
+            }
+        }
+    }, [currentSession]);
 
     // Show draft popup when assessment data changes (and is not empty)
     useEffect(() => {
@@ -162,15 +180,15 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* Context Summary at top */}
-                {currentSession?.patientData && (
+                {/* Context Summary - Disabled (shown in AssessmentPanel instead) */}
+                {/* {currentSession?.patientData && (
                     <ContextSummary
                         chiefComplaint={currentSession.patientData.chiefComplaint}
                         duration={currentSession.patientData.duration || "Unknown"}
                         severity={currentSession.patientData.painLevel || 0}
                         triageLevel={currentSession.patientData.triageLevel || 'routine'}
                     />
-                )}
+                )} */}
 
                 {/* Chat Messages */}
                 <AnimatePresence initial={false}>
@@ -206,8 +224,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     </div>
                 )}
 
-                {/* Enhanced Triage Result */}
-                {triageResult && currentSession?.patientData && (
+                {/* Enhanced Triage Result - Disabled (should be triggered by user request or model) */}
+                {/* {triageResult && currentSession?.patientData && (
                     <div className="mt-4">
                         <EnhancedTriageResult
                             result={{
@@ -227,7 +245,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                             onNewAssessment={handleNewSession}
                         />
                     </div>
-                )}
+                )} */}
 
                 <div ref={messagesEndRef} />
             </div>
@@ -250,6 +268,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         </div>
                     )}
                 </AnimatePresence>
+
 
                 <ChatInput
                     onSend={handleSend}
