@@ -645,7 +645,7 @@ const HeroHeader = () => {
                                     asChild
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="#">
+                                    <Link href="/sign-up">
                                         <span>{t.nav.signUp}</span>
                                     </Link>
                                 </Button>
@@ -653,7 +653,7 @@ const HeroHeader = () => {
                                     asChild
                                     size="sm"
                                     className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}>
-                                    <Link href="#">
+                                    <Link href="/sign-up">
                                         <span>{t.nav.getStarted}</span>
                                     </Link>
                                 </Button>

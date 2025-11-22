@@ -1,5 +1,10 @@
 import { LightLogin } from "@/components/ui/sign-in";
+import { Suspense } from "react";
 
 export default function SignInPage() {
-    return <LightLogin />;
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LightLogin />
+        </Suspense>
+    );
 }

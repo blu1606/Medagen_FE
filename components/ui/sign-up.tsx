@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, FormEvent, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -10,36 +10,20 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const LightLogin = () => {
+export const LightSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, loading } = useAuth();
+  const { signUp, loading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Check for verification success/error messages from URL params
-  useEffect(() => {
-    const verified = searchParams.get('verified');
-    const error = searchParams.get('error');
-    const message = searchParams.get('message');
-
-    if (verified === 'true' && message) {
-      toast.success(decodeURIComponent(message));
-      // Clean URL
-      router.replace('/sign-in');
-    } else if (error) {
-      toast.error(decodeURIComponent(error));
-      // Clean URL
-      router.replace('/sign-in');
-    }
-  }, [searchParams, router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -51,24 +35,31 @@ export const LightLogin = () => {
       return;
     }
 
+    // Password validation
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    // Password confirmation validation
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const result = await signIn(email, password);
+      const result = await signUp(email, password);
       
-      if (result?.session) {
-        // Redirect to home page after successful login
-        // Check if there's a return URL in query params
-        const searchParams = new URLSearchParams(window.location.search);
-        const returnUrl = searchParams.get('returnUrl') || '/';
-        router.push(returnUrl);
+      if (result?.user) {
+        // Redirect to sign-in page after successful sign up
+        // User needs to verify email first
+        router.push("/sign-in");
         router.refresh();
       }
-      // If result is null, it means email not confirmed - error already handled in useAuth
     } catch (error: any) {
-      // Only log unexpected errors (not email confirmation errors)
-      if (!error?.message?.toLowerCase().includes('email not confirmed')) {
-        console.error("Login error:", error);
-      }
+      // Error is already handled in useAuth hook
+      console.error("Sign up error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -89,10 +80,10 @@ export const LightLogin = () => {
             </div>
             <div className="p-0">
               <h2 className="text-2xl font-bold text-gray-900 text-center">
-                Welcome Back
+                Create Account
               </h2>
               <p className="text-center text-gray-500 mt-2">
-                Sign in to continue to your account
+                Sign up to get started with Medagen
               </p>
             </div>
           </div>
@@ -116,14 +107,9 @@ export const LightLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Password
-                </Label>
-                <a href="#" className="text-xs text-blue-600 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -134,7 +120,8 @@ export const LightLogin = () => {
                   required
                   disabled={isSubmitting || loading}
                   className="bg-gray-50 border-gray-200 text-gray-900 pr-12 h-12"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -145,20 +132,50 @@ export const LightLogin = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Must be at least 6 characters
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm Password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={isSubmitting || loading}
+                  className="bg-gray-50 border-gray-200 text-gray-900 pr-12 h-12"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isSubmitting || loading}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <Button
               type="submit"
-              disabled={isSubmitting || loading || !email.trim() || !password.trim()}
+              disabled={isSubmitting || loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
               className="w-full h-12 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400 hover:from-blue-700 hover:via-blue-600 hover:to-blue-500 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-blue-100 active:scale-[0.98]"
             >
               {isSubmitting || loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Creating account...
                 </>
               ) : (
-                "Sign In"
+                "Sign Up"
               )}
             </Button>
 
@@ -171,7 +188,11 @@ export const LightLogin = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <button className="h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg flex items-center justify-center gap-2 border bg-background inline-flex whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+              <button 
+                type="button"
+                className="h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg flex items-center justify-center gap-2 border bg-background inline-flex whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                disabled={isSubmitting || loading}
+              >
                 <svg
                   width="18"
                   height="18"
@@ -199,7 +220,11 @@ export const LightLogin = () => {
                 <span className="whitespace-nowrap">Google</span>
               </button>
 
-              <button className="h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg flex items-center justify-center gap-2 border bg-background inline-flex whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+              <button 
+                type="button"
+                className="h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg flex items-center justify-center gap-2 border bg-background inline-flex whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                disabled={isSubmitting || loading}
+              >
                 <svg
                   width="18"
                   height="18"
@@ -219,9 +244,9 @@ export const LightLogin = () => {
 
           <div className="p-0 mt-6">
             <p className="text-sm text-center text-gray-500 w-full">
-              Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="text-blue-600 hover:underline font-medium">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/sign-in" className="text-blue-600 hover:underline font-medium">
+                Sign in
               </Link>
             </p>
           </div>
@@ -230,3 +255,4 @@ export const LightLogin = () => {
     </div>
   );
 };
+
