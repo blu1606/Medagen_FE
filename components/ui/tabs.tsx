@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 const Tabs = React.forwardRef<
     HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+    React.HTMLAttributes<HTMLDivElement> & { activeValue?: string }
+>(({ className, activeValue, ...props }, ref) => (
     <div
         ref={ref}
         className={cn("w-full", className)}

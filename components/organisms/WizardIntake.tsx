@@ -14,6 +14,8 @@ const AdvancedBodyMap = dynamic(
     { ssr: false }
 );
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 import { useCreateSession } from '@/hooks/useStores';
 import { useImageUpload } from '@/hooks/use-image-upload';
 
@@ -38,6 +40,9 @@ export function WizardIntake() {
         painLevel: 0,
         duration: '',
     });
+    const [bodyMapSide, setBodyMapSide] = useState<'front' | 'back'>('front');
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     useEffect(() => {
         setIsMounted(true);
@@ -87,8 +92,8 @@ export function WizardIntake() {
     const StepTriage = () => (
         <div className="space-y-6">
             <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold">Let's check the urgency first</h2>
-                <p className="text-muted-foreground">Select the option that best describes your situation.</p>
+                <h2 className="text-2xl font-bold">{t.intake.triage.title}</h2>
+                <p className="text-muted-foreground">{t.intake.triage.subtitle}</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -101,8 +106,8 @@ export function WizardIntake() {
                             <ShieldAlert size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-emergency">Emergency</h3>
-                            <p className="text-sm text-muted-foreground mt-2">Severe pain, bleeding, difficulty breathing, or loss of consciousness.</p>
+                            <h3 className="font-bold text-emergency">{t.intake.triage.emergency.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-2">{t.intake.triage.emergency.description}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -122,8 +127,8 @@ export function WizardIntake() {
                             <Clock size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-urgent">Urgent</h3>
-                            <p className="text-sm text-muted-foreground mt-2">Need help today. High fever, infection signs, or sudden illness.</p>
+                            <h3 className="font-bold text-urgent">{t.intake.triage.urgent.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-2">{t.intake.triage.urgent.description}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -143,8 +148,8 @@ export function WizardIntake() {
                             <Activity size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-primary">General Health</h3>
-                            <p className="text-sm text-muted-foreground mt-2">Routine check-up, mild symptoms, or general questions.</p>
+                            <h3 className="font-bold text-primary">{t.intake.triage.routine.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-2">{t.intake.triage.routine.description}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -164,13 +169,13 @@ export function WizardIntake() {
     const StepComplaint = () => (
         <div className="space-y-6 max-w-md mx-auto">
             <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold">What's bothering you today?</h2>
-                <p className="text-muted-foreground">Briefly describe your main symptom.</p>
+                <h2 className="text-2xl font-bold">{t.intake.complaint.title}</h2>
+                <p className="text-muted-foreground">{t.intake.complaint.subtitle}</p>
             </div>
 
             <div className="space-y-4">
                 <Input
-                    placeholder="e.g., Severe headache behind eyes"
+                    placeholder={t.intake.complaint.placeholder}
                     className="text-lg h-12"
                     value={data.chiefComplaint}
                     onChange={(e) => updateData({ chiefComplaint: e.target.value })}
@@ -180,7 +185,7 @@ export function WizardIntake() {
 
                 {/* Image Upload Section */}
                 <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Upload Image (Optional)</Label>
+                    <Label className="text-sm text-muted-foreground">{t.intake.complaint.uploadImage}</Label>
                     <div className="flex items-center gap-3">
                         <input
                             ref={imageUpload.fileInputRef}
@@ -198,7 +203,7 @@ export function WizardIntake() {
                             >
                                 <div className="flex flex-col items-center gap-2">
                                     <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">Add photo of symptom</span>
+                                    <span className="text-sm text-muted-foreground">{t.intake.complaint.addPhoto}</span>
                                 </div>
                             </Button>
                         ) : (
@@ -225,13 +230,22 @@ export function WizardIntake() {
                     )}
                 </div>
 
-                <Button
-                    className="w-full h-12 text-lg"
-                    disabled={!data.chiefComplaint}
-                    onClick={nextStep}
-                >
-                    Next <ArrowRight className="ml-2" />
-                </Button>
+                <div className="flex gap-4">
+                    <Button
+                        variant="outline"
+                        onClick={prevStep}
+                        className="flex-1 h-12 text-lg"
+                    >
+                        {t.intake.complaint.back}
+                    </Button>
+                    <Button
+                        className="flex-1 h-12 text-lg"
+                        disabled={!data.chiefComplaint}
+                        onClick={nextStep}
+                    >
+                        {t.intake.complaint.next} <ArrowRight className="ml-2" />
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -241,8 +255,8 @@ export function WizardIntake() {
         <div className="grid md:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">Where does it hurt?</h2>
-                    <p className="text-muted-foreground">Tap on the body map to select areas.</p>
+                    <h2 className="text-2xl font-bold">{t.intake.details.title}</h2>
+                    <p className="text-muted-foreground">{t.intake.details.subtitle}</p>
                 </div>
                 <div className="flex justify-center py-4">
                     {isMounted && (
@@ -250,6 +264,8 @@ export function WizardIntake() {
                             selectedParts={data.bodyParts}
                             onChange={(parts) => updateData({ bodyParts: parts })}
                             className="w-full max-w-md"
+                            side={bodyMapSide}
+                            onSideChange={setBodyMapSide}
                         />
                     )}
                 </div>
@@ -258,9 +274,9 @@ export function WizardIntake() {
             <div className="space-y-6 pt-4">
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label>How long have you had this?</Label>
+                        <Label>{t.intake.details.duration.label}</Label>
                         <div className="grid grid-cols-2 gap-2">
-                            {['Today', '2-3 Days', 'A Week', 'Longer'].map((opt) => (
+                            {[t.intake.details.duration.options.today, t.intake.details.duration.options.days, t.intake.details.duration.options.week, t.intake.details.duration.options.longer].map((opt) => (
                                 <Button
                                     key={opt}
                                     variant={data.duration === opt ? "default" : "outline"}
@@ -274,7 +290,7 @@ export function WizardIntake() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Pain Level (1-10)</Label>
+                        <Label>{t.intake.details.painLevel}</Label>
                         <div className="flex items-center gap-4">
                             <span className="text-2xl">😊</span>
                             <input
@@ -292,16 +308,16 @@ export function WizardIntake() {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                    <Button variant="outline" onClick={prevStep} className="flex-1" disabled={isLoading}>Back</Button>
+                    <Button variant="outline" onClick={prevStep} className="flex-1" disabled={isLoading}>{t.intake.complaint.back}</Button>
                     <Button onClick={handleComplete} className="flex-1" disabled={isLoading}>
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Creating Session...
+                                {t.intake.details.creatingSession}
                             </>
                         ) : (
                             <>
-                                Start Assessment <Check className="ml-2" />
+                                {t.intake.details.startAssessment} <Check className="ml-2" />
                             </>
                         )}
                     </Button>
@@ -331,9 +347,9 @@ export function WizardIntake() {
                     />
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                    <span>Triage</span>
-                    <span>Complaint</span>
-                    <span>Details</span>
+                    <span>{t.intake.steps.triage}</span>
+                    <span>{t.intake.steps.complaint}</span>
+                    <span>{t.intake.steps.details}</span>
                 </div>
             </div>
 

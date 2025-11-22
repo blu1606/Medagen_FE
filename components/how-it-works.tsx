@@ -3,6 +3,8 @@
 import { cn } from "@/lib/utils";
 import { Activity, Brain, MapPin } from "lucide-react";
 import type React from "react";
+import { useLanguageStore } from "@/store/languageStore";
+import { translations } from "@/lib/translations";
 
 // The main props for the HowItWorks component
 interface HowItWorksProps extends React.HTMLAttributes<HTMLElement> { }
@@ -63,41 +65,29 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   className,
   ...props
 }) => {
+  const { language } = useLanguageStore();
+  const t = translations[language];
+
   const stepsData = [
     {
       icon: <Activity className="h-6 w-6 text-white" />,
-      title: "Describe Your Symptoms",
-      description:
-        "Tell us what's bothering you, select affected body parts, and rate your pain level.",
-      benefits: [
-        "Interactive body map selection",
-        "Symptom severity assessment",
-        "Medical history integration",
-      ],
+      title: t.howItWorks.step1.title,
+      description: t.howItWorks.step1.description,
+      benefits: t.howItWorks.step1.benefits,
       colorClass: "bg-primary",
     },
     {
       icon: <Brain className="h-6 w-6 text-white" />,
-      title: "AI Analysis",
-      description:
-        "Our medical AI analyzes your symptoms against clinical guidelines and medical databases.",
-      benefits: [
-        "Evidence-based triage algorithms",
-        "Real-time clinical assessment",
-        "Pattern recognition from millions of cases",
-      ],
+      title: t.howItWorks.step2.title,
+      description: t.howItWorks.step2.description,
+      benefits: t.howItWorks.step2.benefits,
       colorClass: "bg-teal-500",
     },
     {
       icon: <MapPin className="h-6 w-6 text-white" />,
-      title: "Get Recommendations",
-      description:
-        "Receive personalized triage recommendations with nearby healthcare facilities and next steps.",
-      benefits: [
-        "Emergency vs. urgent care guidance",
-        "Nearest facility locations",
-        "Self-care instructions for minor issues",
-      ],
+      title: t.howItWorks.step3.title,
+      description: t.howItWorks.step3.description,
+      benefits: t.howItWorks.step3.benefits,
       colorClass: "bg-cyan-500",
     },
   ];
@@ -112,10 +102,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-4xl text-center">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            How It Works
+            {t.howItWorks.title}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Get accurate health guidance in three simple steps
+            {t.howItWorks.subtitle}
           </p>
         </div>
 
