@@ -53,7 +53,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const quickReplySuggestions = generateSmartReplies({
         lastAIMessage: lastAIMessage?.content,
         symptom: currentSession?.patientData?.chiefComplaint,
-        stage: messages.length > 3 ? 'details' : 'initial'
+        stage: messages.length > 3 ? 'details' : 'initial',
+        t: t.chat
     });
 
     // Dynamic Thinking Text
