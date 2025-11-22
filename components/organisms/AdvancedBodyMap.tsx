@@ -84,6 +84,7 @@ export function AdvancedBodyMap({ selectedParts, onChange, className, side: cont
         <div className={cn("flex flex-col items-center w-full h-full", className)}>
             <div className="flex gap-2 mb-4 shrink-0">
                 <Button
+                    type="button"
                     variant={side === 'front' ? 'default' : 'outline'}
                     onClick={() => setSide('front')}
                     size="sm"
@@ -92,6 +93,7 @@ export function AdvancedBodyMap({ selectedParts, onChange, className, side: cont
                     {t.intake.details.bodyMap.front}
                 </Button>
                 <Button
+                    type="button"
                     variant={side === 'back' ? 'default' : 'outline'}
                     onClick={() => setSide('back')}
                     size="sm"

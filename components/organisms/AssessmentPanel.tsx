@@ -1,98 +1,33 @@
-// AssessmentPanel – right‑hand panel for symptom assessment
+// AssessmentPanel – right‑hand panel for displaying symptom assessment (read-only)
 "use client";
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { X, ChevronRight, ChevronLeft, ImagePlus, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { AdvancedBodyMap } from '@/components/organisms/AdvancedBodyMap';
-import { useAssessmentStore } from '@/lib/assessmentStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { useLanguageStore } from '@/store/languageStore';
 import { translations } from '@/lib/translations';
-import { useImageUpload } from '@/hooks/use-image-upload';
-import { assessmentService } from '@/lib/services/assessment.service';
-import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export function AssessmentPanel({ className }: { className?: string }) {
     const [collapsed, setCollapsed] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("model");
+    const [bodyMapSide, setBodyMapSide] = useState<'front' | 'back'>('front');
     const { language } = useLanguageStore();
     const t = translations[language];
 
     const toggle = () => setCollapsed(!collapsed);
 
-    const {
-        selectedParts,
-        painLevel,
-        duration,
-        image,
-        history,
-        setParts,
-        setPain,
-        setDuration,
-        setImage,
-        addSnapshot,
-        loadLast,
-    } = useAssessmentStore();
+    // Read data from session store (intake data), not assessment store
+    const { getCurrentSession } = useSessionStore();
+    const currentSession = getCurrentSession();
+    const patientData = currentSession?.patientData;
 
-    const imageUpload = useImageUpload({
-        onUpload: (url, file) => {
-            // Store the actual File object in the assessment store
-            setImage(file);
-        }
-    });
-
-
-    // Save snapshot when user clicks "Save"
-    const handleSave = async () => {
-        setIsSaving(true);
-        try {
-            // Create snapshot and save to local history (persisted via zustand)
-            const snapshot = {
-                id: crypto.randomUUID(),
-                selectedParts,
-                painLevel,
-                duration,
-                image,
-                timestamp: new Date().toISOString(),
-            };
-
-            // Add to local history (automatically persisted to localStorage)
-            addSnapshot(snapshot);
-
-            toast.success('Assessment saved to local storage');
-        } catch (error) {
-            console.error('Failed to save assessment:', error);
-            toast.error('Failed to save assessment');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleLoad = async () => {
-        setIsLoading(true);
-        try {
-            const data = await assessmentService.loadAssessment();
-
-            if (data) {
-                setParts(data.selectedParts || []);
-                setPain(data.painLevel || 0);
-                setDuration(data.duration || '');
-                setImage(data.image);
-                toast.success('Assessment loaded successfully');
-            }
-        } catch (error) {
-            console.error('Failed to load assessment:', error);
-            toast.error('Failed to load assessment');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Extract values from patient data
+    const selectedParts = patientData?.bodyParts || [];
+    const painLevel = patientData?.painLevel || 0;
+    const duration = patientData?.duration || '';
 
     return (
         <div className={
@@ -117,129 +52,109 @@ export function AssessmentPanel({ className }: { className?: string }) {
                         </TabsList>
 
                         <TabsContent value="model" activeValue={activeTab} className="flex-1 flex flex-col min-h-0 mt-2">
-                            {/* Body Map */}
+                            {/* Body Map - Read Only (but can toggle front/back) */}
                             <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
                                 <AdvancedBodyMap
                                     selectedParts={selectedParts}
-                                    onChange={(parts: string[]) => setParts(parts)}
+                                    onChange={() => { }} // Read-only - no selection changes allowed
+                                    side={bodyMapSide}
+                                    onSideChange={setBodyMapSide}
                                     className="w-full h-full max-w-[280px] object-contain"
                                 />
                             </div>
                             <div className="mt-2 text-xs text-muted-foreground text-center shrink-0">
-                                {t.intake.details.bodyMap.selectAreas}
+                                {selectedParts.length > 0
+                                    ? `${t.intake.details.bodyMap.selectAreas}: ${selectedParts.join(', ')}`
+                                    : t.intake.details.bodyMap.selectAreas
+                                }
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="assess" activeValue={activeTab} className="space-y-6">
-                            {/* Pain Slider */}
+                        <TabsContent value="assess" activeValue={activeTab} className="space-y-4">
+                            {/* Patient Info */}
+                            {(patientData?.name || patientData?.age) && (
+                                <div className="space-y-2">
+                                    <div className="font-medium text-sm">{t.intake.details.assessmentPanel.patientInfo.title}</div>
+                                    <div className="p-3 border rounded-lg bg-muted/50 space-y-1">
+                                        {patientData?.name && (
+                                            <div className="text-sm">
+                                                <span className="font-medium">{t.intake.details.assessmentPanel.patientInfo.name}:</span> {patientData.name}
+                                            </div>
+                                        )}
+                                        {patientData?.age && (
+                                            <div className="text-sm">
+                                                <span className="font-medium">{t.intake.form.personalInfo.age.label}:</span> {patientData.age} {t.intake.details.assessmentPanel.patientInfo.age}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Chief Complaint */}
+                            {patientData?.chiefComplaint && (
+                                <div className="space-y-2">
+                                    <div className="font-medium text-sm">{t.intake.details.assessmentPanel.chiefComplaint.title}</div>
+                                    <div className="p-3 border rounded-lg bg-muted/50">
+                                        <div className="text-sm whitespace-pre-wrap">
+                                            {patientData.chiefComplaint}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pain Level */}
                             <div className="space-y-2">
-                                <Label>{t.intake.details.assessmentPanel.painLevel.label}</Label>
-                                <Slider
-                                    min={0}
-                                    max={10}
-                                    step={1}
-                                    value={[painLevel]}
-                                    onValueChange={(val) => setPain(val[0])}
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>{t.intake.details.assessmentPanel.painLevel.noPain}</span>
-                                    <span className="font-medium text-foreground">{painLevel} / 10</span>
-                                    <span>{t.intake.details.assessmentPanel.painLevel.worstPain}</span>
+                                <div className="font-medium text-sm">{t.intake.details.assessmentPanel.painLevel.label}</div>
+                                <div className="p-4 border rounded-lg bg-muted/50">
+                                    <div className="text-2xl font-bold text-center">{painLevel} / 10</div>
+                                    <div className="text-xs text-muted-foreground text-center mt-1">
+                                        {painLevel === 0 && t.intake.details.assessmentPanel.painLevel.noPain}
+                                        {painLevel > 0 && painLevel <= 3 && 'Nhẹ'}
+                                        {painLevel > 3 && painLevel <= 6 && 'Trung bình'}
+                                        {painLevel > 6 && 'Nặng'}
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Duration */}
                             <div className="space-y-2">
-                                <Label>{t.intake.details.assessmentPanel.duration.label}</Label>
-                                <Input
-                                    placeholder={t.intake.details.assessmentPanel.duration.placeholder}
-                                    value={duration}
-                                    onChange={(e) => setDuration(e.target.value)}
-                                />
-                            </div>
-
-                            {/* Image Upload */}
-                            <div className="space-y-2">
-                                <Label>{t.intake.details.assessmentPanel.imageUpload.label}</Label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        ref={imageUpload.fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={imageUpload.handleFileChange}
-                                        className="hidden"
-                                    />
-                                    {!imageUpload.previewUrl ? (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={imageUpload.handleThumbnailClick}
-                                            className="flex-1 h-24 border-dashed"
-                                        >
-                                            <div className="flex flex-col items-center gap-2">
-                                                <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                                                <span className="text-sm text-muted-foreground">{t.intake.details.assessmentPanel.imageUpload.addPhoto}</span>
-                                            </div>
-                                        </Button>
-                                    ) : (
-                                        <div className="relative flex-1 h-24 rounded-lg border overflow-hidden">
-                                            <img src={imageUpload.previewUrl} alt="preview" className="w-full h-full object-cover" />
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="icon"
-                                                className="absolute top-2 right-2 h-6 w-6"
-                                                onClick={() => {
-                                                    imageUpload.handleRemove();
-                                                    setImage(undefined);
-                                                }}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    )}
+                                <div className="font-medium text-sm">{t.intake.details.assessmentPanel.duration.label}</div>
+                                <div className="p-3 border rounded-lg bg-muted/50">
+                                    <div className="text-sm">
+                                        {duration || <span className="text-muted-foreground italic">{t.intake.details.assessmentPanel.duration.notSpecified}</span>}
+                                    </div>
                                 </div>
-                                {imageUpload.fileName && (
-                                    <p className="text-xs text-muted-foreground">{imageUpload.fileName}</p>
-                                )}
                             </div>
 
-                            {/* Save / Load Buttons */}
-                            <div className="flex gap-2 pt-4">
-                                <Button variant="outline" className="flex-1" onClick={handleLoad} disabled={isLoading || isSaving}>
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                    Load
-                                </Button>
-                                <Button className="flex-1" onClick={handleSave} disabled={isLoading || isSaving}>
-                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                    Save
-                                </Button>
-                            </div>
-
-                            {/* History */}
-                            {history.length > 0 && (
-                                <div className="pt-4 border-t">
-                                    <h4 className="font-medium mb-2 text-sm">History</h4>
-                                    <ul className="space-y-2 max-h-40 overflow-y-auto">
-                                        {history.map((snap) => (
-                                            <li key={snap.id} className="border p-2 rounded bg-background/50 hover:bg-accent transition-colors cursor-pointer" onClick={() => {
-                                                setParts(snap.selectedParts);
-                                                setPain(snap.painLevel);
-                                                setDuration(snap.duration);
-                                                setImage(snap.image);
-                                            }}>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-xs font-medium">{new Date(snap.timestamp).toLocaleDateString()}</span>
-                                                    <span className="text-xs text-muted-foreground">{new Date(snap.timestamp).toLocaleTimeString()}</span>
-                                                </div>
-                                                <div className="text-xs text-muted-foreground mt-1 truncate">
-                                                    Pain: {snap.painLevel} | {snap.selectedParts.length} areas
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
+                            {/* Medical History */}
+                            {patientData?.medicalHistory && (
+                                <div className="space-y-2">
+                                    <div className="font-medium text-sm">{t.intake.details.assessmentPanel.medicalHistory.title}</div>
+                                    <div className="p-3 border rounded-lg bg-muted/50">
+                                        <div className="text-sm whitespace-pre-wrap">
+                                            {patientData.medicalHistory}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
+
+                            {/* Current Medications */}
+                            {patientData?.currentMedications && (
+                                <div className="space-y-2">
+                                    <div className="font-medium text-sm">{t.intake.details.assessmentPanel.currentMedications.title}</div>
+                                    <div className="p-3 border rounded-lg bg-muted/50">
+                                        <div className="text-sm whitespace-pre-wrap">
+                                            {patientData.currentMedications}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Info Note */}
+                            <div className="text-xs text-muted-foreground p-3 bg-accent/20 rounded-lg border border-accent">
+                                <p className="font-medium mb-1">{t.intake.details.assessmentPanel.infoNote.title}</p>
+                                <p>{t.intake.details.assessmentPanel.infoNote.description}</p>
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>
@@ -247,3 +162,4 @@ export function AssessmentPanel({ className }: { className?: string }) {
         </div>
     );
 }
+

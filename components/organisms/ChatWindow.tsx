@@ -7,11 +7,11 @@ import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 
 import { useChat, type Message } from '@/hooks/useChat';
-import { useSessionStore } from '@/lib/sessionStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { useAssessmentStore } from '@/lib/assessmentStore';
 import { useLanguageStore } from '@/store/languageStore';
 import { translations } from '@/lib/translations';
-import { formatInitialPatientContext } from '@/lib/utils/formatInitialContext';
+
 
 import { generateSmartReplies } from '@/components/molecules/QuickReplies';
 import { ContextSummary } from '@/components/molecules/ContextSummary';
@@ -38,7 +38,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const router = useRouter();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const { getCurrentSession, setCurrentSession, currentSessionId, updateSession, fetchSessions } = useSessionStore();
+    const { getCurrentSession, setCurrentSession, currentSessionId, updateSession } = useSessionStore();
     const currentSession = getCurrentSession();
     const { language } = useLanguageStore();
     const t = translations[language];
@@ -47,10 +47,11 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportData, setReportData] = useState<CompleteTriageReport | null>(null);
 
-    // Fetch sessions on mount
-    useEffect(() => {
-        fetchSessions();
-    }, [fetchSessions]);
+    // Fetch sessions on mount - DISABLED: Backend doesn't have /api/sessions endpoint
+    // This was causing sessions created from intake to be lost due to 404 error
+    // useEffect(() => {
+    //     fetchSessions();
+    // }, [fetchSessions]);
 
     // Sync sessionId from URL with store
     useEffect(() => {
@@ -135,40 +136,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const handleSend = async (message: string, image?: File) => {
         if (isLoading) return;
 
-        // Check if this is the first user message (only greeting exists)
-        const isFirstMessage = messages.length === 1 && messages[0].id === 'greeting';
-        const hasIntakeData = currentSession?.patientData;
-
-        let finalMessage = message;
-        let finalImage = image;
-
-        // Prepend intake context to first message
-        if (isFirstMessage && hasIntakeData && sessionId) {
-            const intakeContext = formatInitialPatientContext(currentSession!.patientData!);
-            finalMessage = `${intakeContext}\n\n${message}`;
-
-            // Handle image from intake if exists
-            const symptomImage = currentSession!.patientData!.symptomImage;
-            if (symptomImage && typeof symptomImage === 'string' && symptomImage.startsWith('data:') && !image) {
-                try {
-                    const res = await fetch(symptomImage);
-                    const blob = await res.blob();
-                    finalImage = new File([blob], "symptom_image.jpg", { type: blob.type });
-
-                    // Clear symptom image after attaching
-                    updateSession(sessionId, {
-                        patientData: {
-                            ...currentSession!.patientData!,
-                            symptomImage: undefined
-                        }
-                    });
-                } catch (e) {
-                    console.error("Failed to convert symptom image", e);
-                }
-            }
-        }
-
-        await sendMessage(finalMessage, finalImage);
+        // Simply send the message as-is, no context prepending
+        await sendMessage(message, image);
     };
 
     const handleNewSession = () => {
@@ -317,23 +286,23 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     </div>
                 )}
 
-                {/* Triage Report Button */}
-                {triageResult && !isLoading && (
+                {/* Triage Report Button - Moved to Assessment Panel */}
+                {/* {triageResult && !isLoading && (
                     <div className="flex justify-center mt-4 animate-in fade-in slide-in-from-bottom-4">
                         <GenerateReportButton
                             onClick={handleGenerateReport}
                             className="shadow-md hover:shadow-lg transition-all"
                         />
                     </div>
-                )}
+                )} */}
 
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area with Assessment Popup */}
             <div className="sticky bottom-0 z-20 flex flex-col">
-                {/* Assessment Draft Popup */}
-                <AnimatePresence>
+                {/* Assessment Draft Popup - Moved to Assessment Panel */}
+                {/* <AnimatePresence>
                     {showAssessmentDraft && (
                         <div className="mx-4 mb-2 p-3 bg-accent/50 backdrop-blur-md border rounded-lg shadow-lg flex items-center justify-between animate-in slide-in-from-bottom-2 fade-in duration-300">
                             <div className="flex flex-col text-sm">
@@ -347,7 +316,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                             </Button>
                         </div>
                     )}
-                </AnimatePresence>
+                </AnimatePresence> */}
 
                 <EnhancedChatInput
                     onSend={handleSend}

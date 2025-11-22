@@ -235,13 +235,15 @@ export function WizardIntake() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
+
+                                {/* Image Upload - Removed (not needed in intake) */}
+                                {/* <div className="space-y-2">
                                     <Label>{t.intake.details.assessmentPanel.imageUpload.label}</Label>
                                     <ImageUpload
                                         value={data.symptomImage}
                                         onChange={(file) => updateData({ symptomImage: file })}
                                     />
-                                </div>
+                                </div> */}
                             </CardContent>
                         </Card>
                     </div>

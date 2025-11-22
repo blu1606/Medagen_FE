@@ -15,6 +15,8 @@ export interface PatientData {
   painLevel?: number;
   duration?: string;
   triageLevel?: 'emergency' | 'urgent' | 'routine';
+  medicalHistory?: string;
+  currentMedications?: string;
 }
 
 export interface PatientCreate extends PatientData {
