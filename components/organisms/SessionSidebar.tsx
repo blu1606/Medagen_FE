@@ -14,32 +14,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Mock data type - replace with real type from store
-type Session = {
-    id: string;
-    title: string;
-    date: Date;
-    preview: string;
-};
+import { useSessionStore } from '@/lib/sessionStore';
 
-// Mock data generator
-const generateMockSessions = (): Session[] => {
-    return [
-        { id: '1', title: 'Severe Headache', date: new Date(), preview: 'Pain level 8/10 behind eyes...' },
-        { id: '2', title: 'Skin Rash', date: subDays(new Date(), 1), preview: 'Red itchy patch on arm...' },
-        { id: '3', title: 'Fever & Chills', date: subDays(new Date(), 3), preview: 'Temperature 39°C...' },
-        { id: '4', title: 'Back Pain', date: subDays(new Date(), 10), preview: 'Lower back pain after lifting...' },
-    ];
-};
-
-interface SessionSidebarProps {
-    className?: string;
-}
+// ... imports
 
 export function SessionSidebar({ className }: SessionSidebarProps) {
     const router = useRouter();
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [sessions, setSessions] = useState<Session[]>(generateMockSessions());
+    const { sessions, deleteSession, currentSessionId } = useSessionStore();
 
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -49,25 +31,26 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        setSessions(prev => prev.filter(s => s.id !== id));
+        deleteSession(id);
     };
 
-    const groupSessions = (sessions: Session[]) => {
+    const groupSessions = (sessions: any[]) => {
         const groups = {
-            today: [] as Session[],
-            yesterday: [] as Session[],
-            last7Days: [] as Session[],
-            older: [] as Session[],
+            today: [] as any[],
+            yesterday: [] as any[],
+            last7Days: [] as any[],
+            older: [] as any[],
         };
 
         const sevenDaysAgo = subDays(new Date(), 7);
 
         sessions.forEach(session => {
-            if (isToday(session.date)) {
+            const date = new Date(session.timestamp);
+            if (isToday(date)) {
                 groups.today.push(session);
-            } else if (isYesterday(session.date)) {
+            } else if (isYesterday(date)) {
                 groups.yesterday.push(session);
-            } else if (isAfter(session.date, sevenDaysAgo)) {
+            } else if (isAfter(date, sevenDaysAgo)) {
                 groups.last7Days.push(session);
             } else {
                 groups.older.push(session);
@@ -79,20 +62,21 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
 
     const groupedSessions = groupSessions(sessions);
 
-    const SessionItem = ({ session }: { session: Session }) => (
+    const SessionItem = ({ session }: { session: any }) => (
         <div
             className={cn(
                 "group flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors relative",
-                isCollapsed ? "justify-center" : ""
+                isCollapsed ? "justify-center" : "",
+                currentSessionId === session.id ? "bg-muted" : ""
             )}
-            onClick={() => router.push(`/chat?id=${session.id}`)}
+            onClick={() => router.push(`/chat?session=${session.id}`)}
         >
             <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
 
             {!isCollapsed && (
                 <div className="flex-1 overflow-hidden">
                     <div className="font-medium truncate text-sm">{session.title}</div>
-                    <div className="text-xs text-muted-foreground truncate">{session.preview}</div>
+                    <div className="text-xs text-muted-foreground truncate">{session.lastMessage}</div>
                 </div>
             )}
 

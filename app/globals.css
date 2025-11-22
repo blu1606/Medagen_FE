@@ -136,15 +136,15 @@
 
   --destructive: #7f1d1d;
   --destructive-foreground: #f8fafc;
-
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #60a5fa;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }
 

@@ -3,7 +3,7 @@ import { useWebSocket } from './useWebSocket';
 import { useReActFlowStore } from '@/stores/reactFlowStore';
 import type { WebSocketMessage } from '@/types/react-flow';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws/chat';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:7860/ws/chat';
 
 export function useReActFlow(sessionId: string, userId: string) {
     const { isConnected, error, on } = useWebSocket(WS_URL, sessionId, {

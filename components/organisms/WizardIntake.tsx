@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { AdvancedBodyMap } from '@/components/organisms/AdvancedBodyMap';
+import dynamic from 'next/dynamic';
 import { ArrowRight, Check, ShieldAlert, Clock, Activity, Loader2 } from 'lucide-react';
+
+const AdvancedBodyMap = dynamic(
+    () => import('@/components/organisms/AdvancedBodyMap').then(mod => mod.AdvancedBodyMap),
+    { ssr: false }
+);
 import { cn } from '@/lib/utils';
 import { useCreateSession } from '@/hooks/useStores';
 
@@ -23,6 +28,7 @@ type IntakeData = {
 export function WizardIntake() {
     const { createSession, isLoading, error } = useCreateSession();
     const [step, setStep] = useState(0);
+    const [isMounted, setIsMounted] = useState(false);
     const [data, setData] = useState<IntakeData>({
         triageLevel: null,
         chiefComplaint: '',
@@ -30,6 +36,10 @@ export function WizardIntake() {
         painLevel: 0,
         duration: '',
     });
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const updateData = (updates: Partial<IntakeData>) => {
         setData(prev => ({ ...prev, ...updates }));
@@ -175,10 +185,15 @@ export function WizardIntake() {
                     <h2 className="text-2xl font-bold">Where does it hurt?</h2>
                     <p className="text-muted-foreground">Tap on the body map to select areas.</p>
                 </div>
-                <AdvancedBodyMap
-                    selectedParts={data.bodyParts}
-                    onChange={(parts) => updateData({ bodyParts: parts })}
-                />
+                <div className="flex justify-center py-4">
+                    {isMounted && (
+                        <AdvancedBodyMap
+                            selectedParts={data.bodyParts}
+                            onChange={(parts) => updateData({ bodyParts: parts })}
+                            className="w-full max-w-md"
+                        />
+                    )}
+                </div>
             </div>
 
             <div className="space-y-6 pt-4">

@@ -16,6 +16,7 @@ import { MessageBubble } from '@/components/molecules/MessageBubble';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
 import { ReActFlowContainer } from '@/components/organisms/ReActFlowContainer';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ChatWindowProps {
     sessionId?: string;

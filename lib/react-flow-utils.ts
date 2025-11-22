@@ -77,9 +77,9 @@ export function getConfidenceColor(confidence: number): string {
 
 // Helper to get confidence background color
 export function getConfidenceBgColor(confidence: number): string {
-    if (confidence >= 0.8) return 'bg-green-500';
-    if (confidence >= 0.5) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (confidence >= 0.8) return 'bg-green-500 dark:bg-green-600';
+    if (confidence >= 0.5) return 'bg-yellow-500 dark:bg-yellow-600';
+    return 'bg-red-500 dark:bg-red-600';
 }
 
 // Helper to get confidence interpretation
