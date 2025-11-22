@@ -1,82 +1,10 @@
-# Medagen Frontend
+---
+title: Medagen BE
+emoji: 🌖
+colorFrom: pink
+colorTo: pink
+sdk: docker
+pinned: false
+---
 
-Medagen is an AI-powered medical triage and assessment application designed to provide preliminary health insights and guidance. This repository contains the frontend source code, built with modern web technologies to ensure a fast, responsive, and accessible user experience.
-
-## 🚀 Features
-
--   **Intelligent Patient Intake**: A multi-step wizard (`WizardIntake`) that guides users through triage, chief complaint, and detailed symptom reporting.
--   **Interactive Body Map**: A visual selector (`BodyMapSelector`) allowing users to pinpoint pain areas with anatomical precision.
--   **Context-Aware Chat**: An AI chat interface (`ChatWindow`) that maintains context of the patient's intake data, featuring smart quick replies and dynamic thinking indicators.
--   **Real-time Triage Assessment**: Instant analysis of symptoms with clear severity categorization (Emergency, Urgent, Routine, Self-Care) and actionable recommendations.
--   **Session Management**: A sidebar for managing past consultations, with options to archive or delete sessions.
--   **Responsive Design**: Fully optimized for desktop, tablet, and mobile devices.
-
-## 🛠️ Tech Stack
-
--   **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
--   **Language**: [TypeScript](https://www.typescriptlang.org/)
--   **Styling**: [Tailwind CSS](https://tailwindcss.com/) with [Shadcn/UI](https://ui.shadcn.com/) components
--   **Animations**: [Framer Motion](https://www.framer.com/motion/)
--   **State Management**: [Zustand](https://github.com/pmndrs/zustand) (with persistence)
--   **Icons**: [Lucide React](https://lucide.dev/)
--   **Form Handling**: React Hook Form + Zod
-
-## 📦 Getting Started
-
-### Prerequisites
-
--   Node.js 18+ 
--   pnpm (recommended) or npm/yarn
-
-### Installation
-
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/blu1606/Medagen_FE.git
-    cd Medagen_FE
-    ```
-
-2.  Install dependencies:
-    ```bash
-    pnpm install
-    ```
-
-3.  Run the development server:
-    ```bash
-    pnpm dev
-    ```
-
-4.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## 📂 Project Structure
-
-```
-frontend/
-├── app/                    # Next.js App Router pages
-│   ├── chat/               # Chat interface
-│   ├── intake/             # Patient intake wizard
-│   └── page.tsx            # Landing page
-├── components/
-│   ├── molecules/          # Reusable UI blocks (ChatInput, BodyMapSelector)
-│   ├── organisms/          # Complex features (ChatWindow, WizardIntake)
-│   ├── templates/          # Page layouts
-│   └── ui/                 # Shadcn/UI primitives
-├── hooks/                  # Custom React hooks (useChat)
-├── lib/                    # Utilities and stores (sessionStore, utils)
-└── public/                 # Static assets
-```
-
-## 📜 Scripts
-
--   `pnpm dev`: Starts the development server.
--   `pnpm build`: Builds the application for production.
--   `pnpm start`: Starts the production server.
--   `pnpm lint`: Runs ESLint checks.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is private and proprietary.
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
