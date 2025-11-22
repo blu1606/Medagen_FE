@@ -29,6 +29,7 @@ import { CompleteTriageReportCard } from '@/components/organisms/CompleteTriageR
 import { generateCompleteReport } from '@/lib/triageAdapter';
 import { CompleteTriageReport } from '@/lib/api/types';
 import { reportService, ReportResponse } from '@/lib/services/report.service';
+import { adaptBackendReport, generateSessionName } from '@/lib/adapters/reportAdapter';
 
 interface ChatWindowProps {
     sessionId?: string;
@@ -47,8 +48,34 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     // Triage Report State
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportData, setReportData] = useState<CompleteTriageReport | null>(null);
-    const [reportMarkdown, setReportMarkdown] = useState<string | null>(null);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+    // User Location State
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
+
+    // Request user location on mount
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                    console.log('Location access granted:', position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.warn('Location access denied or failed:', error);
+                    // Don't show toast here - only show when it's actually needed (like generating report)
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000 // Cache for 5 minutes
+                }
+            );
+        }
+    }, []);
 
     // Fetch sessions on mount - DISABLED: Backend doesn't have /api/sessions endpoint
     // This was causing sessions created from intake to be lost due to 404 error
@@ -66,6 +93,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const { messages, isLoading, triageResult, sendMessage, setMessages } = useChat({
         sessionId,
         initialMessages,
+        location: userLocation,
     });
 
     // Smart quick reply suggestions based on context
@@ -162,23 +190,63 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
 
         setIsGeneratingReport(true);
         try {
+            // Use existing location or request new one
+            let reportLocation: { latitude: number; longitude: number } | null = null;
+
+            if (userLocation) {
+                reportLocation = {
+                    latitude: userLocation.lat,
+                    longitude: userLocation.lng
+                };
+                toast.info('Using your location for nearby hospitals...');
+            } else {
+                // Try to get location if not available yet
+                toast.info('Requesting location access...');
+                if (navigator.geolocation) {
+                    try {
+                        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 0
+                            });
+                        });
+
+                        reportLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        toast.success('Location access granted');
+                    } catch (geoError: any) {
+                        console.warn('Location access denied or failed:', geoError);
+                        if (geoError.code === 1) {
+                            toast.warning('Location access denied. Hospitals will be suggested based on default location.');
+                        } else if (geoError.code === 2) {
+                            toast.warning('Location unavailable. Using default location.');
+                        } else {
+                            toast.warning('Location timeout. Using default location.');
+                        }
+                    }
+                } else {
+                    toast.warning('Geolocation not supported by browser. Using default location.');
+                }
+            }
+
             toast.info('Generating comprehensive report...');
 
-            // Get full report from backend API using the correct session ID
-            const apiReport = await reportService.getReport(reportSessionId, 'full');
+            // Get full report from backend API with location
+            const apiReport = await reportService.getReport(reportSessionId, 'full', reportLocation);
 
-            // Store markdown for display in the markdown tab
-            setReportMarkdown(apiReport.report.report_markdown);
+            // Report service already normalizes the response format
+            // apiReport.report.report_content = backend data
 
-            // Generate complete report with local data + API data
-            if (triageResult) {
-                const localReport = generateCompleteReport(triageResult, reportSessionId);
-                setReportData(localReport);
-                toast.success('Report generated successfully!');
-            } else {
-                // If no triageResult, still show the markdown from API
-                toast.success('Report generated from session data');
-            }
+            const backendData = apiReport.report.report_content;
+
+            // Convert backend data to UI format using adapter
+            const adaptedReport = adaptBackendReport(backendData, reportSessionId);
+
+            setReportData(adaptedReport);
+            toast.success('Report generated successfully!');
 
             setShowReportModal(true);
         } catch (error: any) {
@@ -372,7 +440,6 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
             {/* Triage Report Modal */}
             <CompleteTriageReportCard
                 report={reportData}
-                markdown={reportMarkdown}
                 open={showReportModal}
                 onOpenChange={setShowReportModal}
             />

@@ -91,3 +91,7 @@ export interface ReportApiResponse {
     report_markdown: string;
   };
 }
+
+// Backend currently returns direct format (without wrapper)
+// This is the actual response type for now
+export type ActualBackendReportResponse = BackendReportResponse;
