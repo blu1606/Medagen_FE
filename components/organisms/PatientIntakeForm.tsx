@@ -163,7 +163,7 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
 
             // Create session with patient data
             const { createSession } = useSessionStore.getState();
-            const sessionId = createSession({
+            const sessionId = await createSession({
                 name: data.name,
                 age: data.age,
                 gender: data.gender,

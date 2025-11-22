@@ -66,6 +66,10 @@ export const sessionService = {
                 agent_status: 'completed', // Triage completed
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
+                triage_result: {
+                    triage_level: backendData.triage_level,
+                    recommendation: backendData.recommendation
+                }
             };
 
             return sessionResponse;

@@ -34,10 +34,15 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [sendingInitialData, setSendingInitialData] = useState(false);
 
-    const { getCurrentSession, setCurrentSession, currentSessionId, updateSession } = useSessionStore();
+    const { getCurrentSession, setCurrentSession, currentSessionId, updateSession, fetchSessions } = useSessionStore();
     const currentSession = getCurrentSession();
     const { language } = useLanguageStore();
     const t = translations[language];
+
+    // Fetch sessions on mount
+    useEffect(() => {
+        fetchSessions();
+    }, [fetchSessions]);
 
     // Sync sessionId from URL with store
     useEffect(() => {

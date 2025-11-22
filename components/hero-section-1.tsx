@@ -637,7 +637,7 @@ const HeroHeader = () => {
                                     variant="outline"
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="#">
+                                    <Link href="/sign-in">
                                         <span>{t.nav.login}</span>
                                     </Link>
                                 </Button>

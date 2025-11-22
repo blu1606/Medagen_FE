@@ -58,6 +58,13 @@ export interface SessionResponse {
   agent_status: AgentStatus;
   created_at: string;
   updated_at?: string;
+  triage_result?: {
+    triage_level: string;
+    recommendation: {
+      action: string;
+      timeframe: string;
+    };
+  };
 }
 
 export interface SessionUpdate {
