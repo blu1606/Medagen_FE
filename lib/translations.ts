@@ -195,6 +195,111 @@ export const translations = {
                 startAssessment: "Start Assessment",
                 creatingSession: "Creating Session..."
             }
+        },
+        chat: {
+            header: {
+                title: "Chat Consultation",
+                session: "Session",
+                new: "New",
+                newAssessment: "New Assessment",
+                export: "Export Conversation",
+                exportComingSoon: "Export functionality coming soon"
+            },
+            input: {
+                placeholder: "Type your message...",
+                send: "Send"
+            },
+            thinking: {
+                analyzing: "Analyzing symptoms...",
+                checking: "Checking medical guidelines...",
+                formulating: "Formulating response...",
+                default: "AI is analyzing..."
+            },
+            welcome: "Hello! I've reviewed your information. Let me ask a few follow-up questions to better understand your condition. Can you tell me more about what you're feeling?",
+            assessment: {
+                pending: "Assessment Update Pending",
+                areas: "areas",
+                pain: "Pain",
+                duration: "Duration",
+                noDuration: "No duration",
+                send: "Send Update"
+            },
+            triage: {
+                title: "Your Triage Result",
+                quickActions: "Quick Actions",
+                findClinics: "Find Clinics",
+                bookAppointment: "Book Appointment",
+                emailDoctor: "Email to Doctor",
+                downloadPdf: "Download PDF",
+                generating: "Generating...",
+                callEmergency: "Call Emergency (911)",
+                whileYouWait: "While You Wait",
+                share: "Share",
+                exportResult: "Export Result",
+                exporting: "Exporting...",
+                startNew: "Start New Assessment",
+                clinicToast: "Opening nearby clinics...",
+                clinicDesc: "This feature will show clinics based on your location",
+                appointmentToast: "Opening appointment booking...",
+                appointmentDesc: "Connect with healthcare providers in your area",
+                emailToast: "Email prepared!",
+                emailDesc: "Opening your email client with the report",
+                downloadToast: "Report downloaded!",
+                downloadDesc: "Check your downloads folder",
+                shareTitle: "Medagen Health Report",
+                shareToast: "Link copied to clipboard!"
+            },
+            quickReplies: {
+                label: "Quick replies",
+                pain: {
+                    throbbing: "Yes, it's throbbing",
+                    dull: "No, it's a dull ache",
+                    comesAndGoes: "It comes and goes",
+                    constant: "It's constant"
+                },
+                duration: {
+                    today: "Just started today",
+                    fewDays: "2-3 days ago",
+                    week: "About a week",
+                    moreThanWeek: "More than a week"
+                },
+                progression: {
+                    worse: "Getting worse",
+                    same: "About the same",
+                    better: "Getting better",
+                    unsure: "Not sure"
+                },
+                medication: {
+                    paracetamol: "Yes, paracetamol",
+                    ibuprofen: "Yes, ibuprofen",
+                    none: "No medication yet",
+                    regular: "I take regular medication"
+                },
+                headache: {
+                    behindEyes: "Behind my eyes",
+                    wholeHead: "Whole head",
+                    oneSide: "One side only",
+                    backOfHead: "Back of head"
+                },
+                fever: {
+                    high: "Yes, high fever",
+                    mild: "Mild fever",
+                    none: "No fever",
+                    unsure: "Not sure"
+                },
+                initial: {
+                    tellMore: "Tell me more",
+                    whatToDo: "What should I do?",
+                    worried: "I'm worried",
+                    serious: "Is this serious?"
+                },
+                default: {
+                    yes: "Yes",
+                    no: "No",
+                    notSure: "I'm not sure",
+                    explain: "Can you explain more?"
+                }
+            }
         }
     },
     vi: {
@@ -392,6 +497,111 @@ export const translations = {
                 painLevel: "Mức độ đau (1-10)",
                 startAssessment: "Bắt đầu đánh giá",
                 creatingSession: "Đang tạo phiên..."
+            }
+        },
+        chat: {
+            header: {
+                title: "Tư vấn qua Chat",
+                session: "Phiên",
+                new: "Mới",
+                newAssessment: "Đánh giá mới",
+                export: "Xuất cuộc trò chuyện",
+                exportComingSoon: "Tính năng xuất sắp ra mắt"
+            },
+            input: {
+                placeholder: "Nhập tin nhắn của bạn...",
+                send: "Gửi"
+            },
+            thinking: {
+                analyzing: "Đang phân tích triệu chứng...",
+                checking: "Đang kiểm tra hướng dẫn y tế...",
+                formulating: "Đang soạn câu trả lời...",
+                default: "AI đang phân tích..."
+            },
+            welcome: "Xin chào! Tôi đã xem qua thông tin của bạn. Hãy để tôi hỏi một vài câu hỏi tiếp theo để hiểu rõ hơn về tình trạng của bạn. Bạn có thể cho tôi biết thêm về cảm giác của bạn không?",
+            assessment: {
+                pending: "Cập nhật đánh giá đang chờ xử lý",
+                areas: "khu vực",
+                pain: "Đau",
+                duration: "Thời gian",
+                noDuration: "Không rõ thời gian",
+                send: "Gửi cập nhật"
+            },
+            triage: {
+                title: "Kết quả phân loại của bạn",
+                quickActions: "Hành động nhanh",
+                findClinics: "Tìm phòng khám",
+                bookAppointment: "Đặt lịch hẹn",
+                emailDoctor: "Gửi email cho bác sĩ",
+                downloadPdf: "Tải xuống PDF",
+                generating: "Đang tạo...",
+                callEmergency: "Gọi cấp cứu (115)",
+                whileYouWait: "Trong khi chờ đợi",
+                share: "Chia sẻ",
+                exportResult: "Xuất kết quả",
+                exporting: "Đang xuất...",
+                startNew: "Bắt đầu đánh giá mới",
+                clinicToast: "Đang mở danh sách phòng khám gần đây...",
+                clinicDesc: "Tính năng này sẽ hiển thị các phòng khám dựa trên vị trí của bạn",
+                appointmentToast: "Đang mở đặt lịch hẹn...",
+                appointmentDesc: "Kết nối với các nhà cung cấp dịch vụ y tế trong khu vực của bạn",
+                emailToast: "Email đã sẵn sàng!",
+                emailDesc: "Đang mở ứng dụng email của bạn với báo cáo",
+                downloadToast: "Đã tải xuống báo cáo!",
+                downloadDesc: "Kiểm tra thư mục tải xuống của bạn",
+                shareTitle: "Báo cáo sức khỏe Medagen",
+                shareToast: "Đã sao chép liên kết vào bộ nhớ tạm!"
+            },
+            quickReplies: {
+                label: "Gợi ý nhanh",
+                pain: {
+                    throbbing: "Có, nó đau nhói",
+                    dull: "Không, nó đau âm ỉ",
+                    comesAndGoes: "Đau từng cơn",
+                    constant: "Đau liên tục"
+                },
+                duration: {
+                    today: "Mới bắt đầu hôm nay",
+                    fewDays: "2-3 ngày trước",
+                    week: "Khoảng một tuần",
+                    moreThanWeek: "Hơn một tuần"
+                },
+                progression: {
+                    worse: "Đang tệ hơn",
+                    same: "Vẫn như cũ",
+                    better: "Đang đỡ hơn",
+                    unsure: "Không chắc"
+                },
+                medication: {
+                    paracetamol: "Có, paracetamol",
+                    ibuprofen: "Có, ibuprofen",
+                    none: "Chưa uống thuốc",
+                    regular: "Tôi uống thuốc đều đặn"
+                },
+                headache: {
+                    behindEyes: "Sau hốc mắt",
+                    wholeHead: "Cả đầu",
+                    oneSide: "Chỉ một bên",
+                    backOfHead: "Sau gáy"
+                },
+                fever: {
+                    high: "Có, sốt cao",
+                    mild: "Sốt nhẹ",
+                    none: "Không sốt",
+                    unsure: "Không chắc"
+                },
+                initial: {
+                    tellMore: "Kể thêm cho tôi",
+                    whatToDo: "Tôi nên làm gì?",
+                    worried: "Tôi lo lắng",
+                    serious: "Có nghiêm trọng không?"
+                },
+                default: {
+                    yes: "Có",
+                    no: "Không",
+                    notSure: "Tôi không chắc",
+                    explain: "Bạn có thể giải thích thêm không?"
+                }
             }
         }
     }

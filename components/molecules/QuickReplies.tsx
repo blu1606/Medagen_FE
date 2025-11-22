@@ -6,11 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuickRepliesProps {
     suggestions: string[];
+
     onSelect: (reply: string) => void;
     isVisible?: boolean;
+    label?: string;
 }
 
-export function QuickReplies({ suggestions, onSelect, isVisible = true }: QuickRepliesProps) {
+export function QuickReplies({ suggestions, onSelect, isVisible = true, label = "Quick replies" }: QuickRepliesProps) {
     if (!isVisible || suggestions.length === 0) return null;
 
     return (
@@ -23,7 +25,7 @@ export function QuickReplies({ suggestions, onSelect, isVisible = true }: QuickR
                 className="mb-3"
             >
                 <p className="text-xs text-muted-foreground mb-2 px-1">
-                    💡 Quick replies:
+                    💡 {label}:
                 </p>
                 <div className="flex flex-wrap gap-2">
                     {suggestions.map((suggestion, index) => (
@@ -54,80 +56,92 @@ export function generateSmartReplies(context: {
     lastAIMessage?: string;
     symptom?: string;
     stage?: 'initial' | 'details' | 'assessment';
+    t?: any;
 }): string[] {
-    const { lastAIMessage, symptom, stage } = context;
+    const { lastAIMessage, symptom, stage, t } = context;
+
+    // Helper to get translation or fallback
+    const getT = (path: string, fallback: string) => {
+        if (!t) return fallback;
+        const keys = path.split('.');
+        let value = t;
+        for (const key of keys) {
+            value = value?.[key];
+        }
+        return value || fallback;
+    };
 
     // Context-aware suggestions based on last AI message
     if (lastAIMessage?.toLowerCase().includes('pain')) {
         return [
-            "Yes, it's throbbing",
-            "No, it's a dull ache",
-            "It comes and goes",
-            "It's constant"
+            getT('chat.quickReplies.pain.throbbing', "Yes, it's throbbing"),
+            getT('chat.quickReplies.pain.dull', "No, it's a dull ache"),
+            getT('chat.quickReplies.pain.comesAndGoes', "It comes and goes"),
+            getT('chat.quickReplies.pain.constant', "It's constant")
         ];
     }
 
     if (lastAIMessage?.toLowerCase().includes('how long') || lastAIMessage?.toLowerCase().includes('when')) {
         return [
-            "Just started today",
-            "2-3 days ago",
-            "About a week",
-            "More than a week"
+            getT('chat.quickReplies.duration.today', "Just started today"),
+            getT('chat.quickReplies.duration.fewDays', "2-3 days ago"),
+            getT('chat.quickReplies.duration.week', "About a week"),
+            getT('chat.quickReplies.duration.moreThanWeek', "More than a week")
         ];
     }
 
     if (lastAIMessage?.toLowerCase().includes('worse') || lastAIMessage?.toLowerCase().includes('better')) {
         return [
-            "Getting worse",
-            "About the same",
-            "Getting better",
-            "Not sure"
+            getT('chat.quickReplies.progression.worse', "Getting worse"),
+            getT('chat.quickReplies.progression.same', "About the same"),
+            getT('chat.quickReplies.progression.better', "Getting better"),
+            getT('chat.quickReplies.progression.unsure', "Not sure")
         ];
     }
 
     if (lastAIMessage?.toLowerCase().includes('medication') || lastAIMessage?.toLowerCase().includes('medicine')) {
         return [
-            "Yes, paracetamol",
-            "Yes, ibuprofen",
-            "No medication yet",
-            "I take regular medication"
+            getT('chat.quickReplies.medication.paracetamol', "Yes, paracetamol"),
+            getT('chat.quickReplies.medication.ibuprofen', "Yes, ibuprofen"),
+            getT('chat.quickReplies.medication.none', "No medication yet"),
+            getT('chat.quickReplies.medication.regular', "I take regular medication")
         ];
     }
 
     // Symptom-specific suggestions
     if (symptom?.toLowerCase().includes('headache')) {
         return [
-            "Behind my eyes",
-            "Whole head",
-            "One side only",
-            "Back of head"
+            getT('chat.quickReplies.headache.behindEyes', "Behind my eyes"),
+            getT('chat.quickReplies.headache.wholeHead', "Whole head"),
+            getT('chat.quickReplies.headache.oneSide', "One side only"),
+            getT('chat.quickReplies.headache.backOfHead', "Back of head")
         ];
     }
 
     if (symptom?.toLowerCase().includes('fever')) {
         return [
-            "Yes, high fever",
-            "Mild fever",
-            "No fever",
-            "Not sure"
+            getT('chat.quickReplies.fever.high', "Yes, high fever"),
+            getT('chat.quickReplies.fever.mild', "Mild fever"),
+            getT('chat.quickReplies.fever.none', "No fever"),
+            getT('chat.quickReplies.fever.unsure', "Not sure")
         ];
     }
 
     // Stage-based suggestions
     if (stage === 'initial') {
         return [
-            "Tell me more",
-            "What should I do?",
-            "I'm worried",
-            "Is this serious?"
+            getT('chat.quickReplies.initial.tellMore', "Tell me more"),
+            getT('chat.quickReplies.initial.whatToDo', "What should I do?"),
+            getT('chat.quickReplies.initial.worried', "I'm worried"),
+            getT('chat.quickReplies.initial.serious', "Is this serious?")
         ];
     }
 
     // Default helpful responses
     return [
-        "Yes",
-        "No",
-        "I'm not sure",
-        "Can you explain more?"
+        getT('chat.quickReplies.default.yes', "Yes"),
+        getT('chat.quickReplies.default.no', "No"),
+        getT('chat.quickReplies.default.notSure', "I'm not sure"),
+        getT('chat.quickReplies.default.explain', "Can you explain more?")
     ];
 }
