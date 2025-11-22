@@ -2,19 +2,20 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
+import { Message } from 'react-hook-form';
+import { useChat } from '@/hooks/useChat';
+import { useSessionStore } from '@/lib/sessionStore';
 import { useRouter } from 'next/navigation';
-import { MessageBubble } from '@/components/molecules/MessageBubble';
-import { EnhancedTriageResult } from '@/components/organisms/EnhancedTriageResult';
+import { toast } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
+import { generateSmartReplies } from '@/components/molecules/QuickReplies';
 import { ContextSummary } from '@/components/molecules/ContextSummary';
 import { ChatInput } from '@/components/molecules/ChatInput';
-import { generateSmartReplies } from '@/components/molecules/QuickReplies';
-import { useSessionStore } from '@/lib/sessionStore';
-import { toast } from 'sonner';
-import { useChat, Message } from '@/hooks/useChat';
-import { AnimatePresence } from 'framer-motion';
+import { EnhancedTriageResult } from '@/components/organisms/EnhancedTriageResult';
+import { MessageBubble } from '@/components/molecules/MessageBubble';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
+import { ReActFlowContainer } from '@/components/organisms/ReActFlowContainer';
 
 interface ChatWindowProps {
     sessionId?: string;
@@ -154,6 +155,15 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         <MessageBubble key={msg.id} message={msg} />
                     ))}
                 </AnimatePresence>
+
+                {/* ReAct Flow Visualization */}
+                {currentSession && (
+                    <ReActFlowContainer
+                        sessionId={currentSession.id}
+                        userId="current-user"
+                        className="mt-4"
+                    />
+                )}
 
                 {/* AI Typing Indicator */}
                 {isLoading && (
