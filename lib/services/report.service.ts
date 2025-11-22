@@ -2,30 +2,14 @@ import apiClient from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
 import { transformApiError } from './errors';
 import { mockBackend } from '@/lib/mock-backend';
+import { ReportApiResponse, BackendReportResponse } from '@/lib/api/report-types';
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.NEXT_PUBLIC_MOCK_DATA === 'TRUE';
 
-/**
- * Report API Response Types
- */
-export interface ReportContent {
-    conversation_timeline?: any[];
-    tool_executions?: any[];
-    summary?: any;
-    [key: string]: any;
-}
-
-export interface ReportResponse {
-    session_id: string;
-    report_type: 'full' | 'summary' | 'tools_only';
-    generated_at: string;
-    report: {
-        report_content: ReportContent;
-        report_markdown: string;
-    };
-}
-
 export type ReportType = 'full' | 'summary' | 'tools_only';
+
+// Re-export for backward compatibility
+export type ReportResponse = ReportApiResponse;
 
 /**
  * Report Service
