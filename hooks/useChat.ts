@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { conversationService } from '@/lib/services';
+import { storageService } from '@/lib/services/storage.service';
 import { api } from '@/lib/api';
 
 export interface TriageResult {
@@ -110,11 +111,28 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
         try {
             let imageUrl: string | undefined;
 
-            // Upload image if provided (TODO: Implement image upload to Supabase Storage)
+            // Upload image to Supabase Storage if provided
             if (image) {
-                // For now, use object URL - in production, upload to Supabase Storage first
-                imageUrl = URL.createObjectURL(image);
-                toast.info('Image upload to backend not yet implemented. Using local URL.');
+                try {
+                    setIsLoading(true);
+                    toast.loading('Uploading image...', { id: 'upload-image' });
+                    
+                    imageUrl = await storageService.uploadImage(image, {
+                        userId,
+                        sessionId,
+                        folder: 'chat',
+                    });
+
+                    toast.success('Image uploaded successfully', { id: 'upload-image' });
+                } catch (uploadError: any) {
+                    toast.error(uploadError.message || 'Failed to upload image', { id: 'upload-image' });
+                    // Update user message status to error
+                    setMessages((prev) =>
+                        prev.map((m) => (m.id === userMessage.id ? { ...m, status: 'error' } : m))
+                    );
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Call backend health-check endpoint

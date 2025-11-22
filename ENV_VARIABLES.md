@@ -14,6 +14,10 @@ NEXT_PUBLIC_WS_URL=wss://medagen-backend.hf.space/ws/chat
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
+# Supabase Storage Bucket for Images
+# Bucket name in Supabase Storage (must be created in Supabase Dashboard)
+NEXT_PUBLIC_SUPABASE_ASSETS_BUCKET=image
+
 # Feature Flags
 NEXT_PUBLIC_ENABLE_REACT_FLOW=true
 NEXT_PUBLIC_ENABLE_WEBSOCKET=true

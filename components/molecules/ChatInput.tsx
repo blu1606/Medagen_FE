@@ -3,12 +3,12 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
+import { Send, Image as ImageIcon, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ChatInputProps {
-    onSend: (message: string) => void;
+    onSend: (message: string, image?: File) => void;
     disabled?: boolean;
     placeholder?: string;
     suggestedReplies?: string[];
@@ -23,12 +23,53 @@ export function ChatInput({
     className
 }: ChatInputProps) {
     const [message, setMessage] = useState('');
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSend = () => {
-        if (message.trim()) {
-            onSend(message);
+        if (message.trim() || selectedImage) {
+            onSend(message, selectedImage || undefined);
             setMessage('');
+            setSelectedImage(null);
+            setImagePreview(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('Image size must be less than 10MB');
+                return;
+            }
+
+            setSelectedImage(file);
+            const preview = URL.createObjectURL(file);
+            setImagePreview(preview);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
@@ -70,7 +111,56 @@ export function ChatInput({
                 )}
             </AnimatePresence>
 
+            {/* Image Preview */}
+            <AnimatePresence>
+                {selectedImage && imagePreview && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mb-2 relative inline-block"
+                    >
+                        <div className="relative">
+                            <img
+                                src={imagePreview}
+                                alt="Selected"
+                                className="h-20 rounded-md object-cover"
+                            />
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6"
+                                onClick={handleRemoveImage}
+                            >
+                                <X className="h-3 w-3" />
+                            </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{selectedImage.name}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="flex gap-2">
+                {/* Image Upload Button */}
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    disabled={disabled}
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Upload image"
+                >
+                    <ImageIcon className="h-4 w-4" />
+                </Button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                />
+
                 <Input
                     ref={inputRef}
                     value={message}
@@ -83,7 +173,7 @@ export function ChatInput({
                 />
                 <Button
                     onClick={handleSend}
-                    disabled={disabled || !message.trim()}
+                    disabled={disabled || (!message.trim() && !selectedImage)}
                     size="icon"
                 >
                     <Send className="h-4 w-4" />

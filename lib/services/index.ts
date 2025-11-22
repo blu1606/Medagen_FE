@@ -9,6 +9,7 @@ export { sessionService } from './session.service';
 export { patientService } from './patient.service';
 export { conversationService } from './conversation.service';
 export { agentService } from './agent.service';
+export { storageService } from './storage.service';
 
 // Export error classes
 export {

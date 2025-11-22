@@ -93,9 +93,9 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
         }
     }, []);
 
-    const handleSend = async (message: string) => {
+    const handleSend = async (message: string, image?: File) => {
         if (isLoading) return;
-        await sendMessage(message);
+        await sendMessage(message, image);
     };
 
     const handleNewSession = () => {
