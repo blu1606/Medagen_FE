@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
-import Model from '@mjcdev/react-body-highlighter';
+import { useState, useCallback, useEffect } from 'react';
+import Body from '@mjcdev/react-body-highlighter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -39,30 +39,43 @@ const MUSCLE_NAMES: Record<string, string> = {
 };
 
 export function AdvancedBodyMap({ selectedParts, onChange, className }: AdvancedBodyMapProps) {
-    const [type, setType] = useState<'anterior' | 'posterior'>('anterior');
-    const [hoveredMuscle, setHoveredMuscle] = useState<string | null>(null);
+    const [side, setSide] = useState<'front' | 'back'>('front');
 
-    const handleClick = useCallback(({ muscle }: { muscle: string }) => {
-        const muscleId = muscle.toLowerCase();
+    useEffect(() => {
+        console.log('AdvancedBodyMap mounted');
+        console.log('Body component:', Body);
+        console.log('Current side:', side);
+        console.log('Selected parts:', selectedParts);
+    }, [side, selectedParts]);
 
-        if (selectedParts.includes(muscleId)) {
-            onChange(selectedParts.filter(p => p !== muscleId));
-        } else {
-            onChange([...selectedParts, muscleId]);
-        }
-    }, [selectedParts, onChange]);
-
-    const handleHover = useCallback(({ muscle }: { muscle: string }) => {
-        setHoveredMuscle(muscle ? muscle.toLowerCase() : null);
-    }, []);
-
+    // Convert selectedParts to the format expected by the library
+    // Library expects: { slug: string, intensity: number, side?: 'left' | 'right' }
     const data = selectedParts.map(part => ({
-        name: part,
-        frequency: 2
+        slug: part,
+        intensity: 2
     }));
 
-    // Cast Model to any to avoid type errors with the library
-    const BodyModel = Model as any;
+    console.log('Rendering with data:', data);
+
+    // Handle body part click according to library API
+    const handleBodyPartClick = useCallback((bodyPart: any, clickedSide?: 'left' | 'right') => {
+        console.log('Body part clicked:', bodyPart, 'Side:', clickedSide);
+
+        const partId = bodyPart?.slug?.toLowerCase() || '';
+
+        if (!partId) {
+            console.warn('No slug found in bodyPart:', bodyPart);
+            return;
+        }
+
+        if (selectedParts.includes(partId)) {
+            console.log('Removing part:', partId);
+            onChange(selectedParts.filter(p => p !== partId));
+        } else {
+            console.log('Adding part:', partId);
+            onChange([...selectedParts, partId]);
+        }
+    }, [selectedParts, onChange]);
 
     const getMuscleDisplayName = (muscle: string | null) => {
         if (!muscle) return '';
@@ -73,15 +86,15 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
         <Card className={cn("p-4 flex flex-col items-center bg-background/50 backdrop-blur-sm", className)}>
             <div className="flex gap-2 mb-4 w-full justify-center">
                 <Button
-                    variant={type === 'anterior' ? 'default' : 'outline'}
-                    onClick={() => setType('anterior')}
+                    variant={side === 'front' ? 'default' : 'outline'}
+                    onClick={() => setSide('front')}
                     size="sm"
                 >
                     Front
                 </Button>
                 <Button
-                    variant={type === 'posterior' ? 'default' : 'outline'}
-                    onClick={() => setType('posterior')}
+                    variant={side === 'back' ? 'default' : 'outline'}
+                    onClick={() => setSide('back')}
                     size="sm"
                 >
                     Back
@@ -89,21 +102,15 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
             </div>
 
             <div className="relative w-full max-w-[300px] aspect-[1/2]">
-                <BodyModel
-                    type={type}
+                <Body
                     data={data}
-                    style={{ width: '100%', height: '100%', cursor: 'pointer' }}
-                    onClick={handleClick}
-                    onMouseOver={handleHover}
-                    highlightedColors={['#e6f2ff', '#0066cc']}
+                    side={side}
+                    gender="male"
+                    scale={1.5}
+                    onBodyPartClick={handleBodyPartClick}
+                    colors={['#e6f2ff', '#0066cc']}
+                    border="#dfdfdf"
                 />
-
-                {/* Hover tooltip */}
-                {hoveredMuscle && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground px-3 py-2 rounded-md shadow-lg text-sm font-medium whitespace-nowrap z-10">
-                        {getMuscleDisplayName(hoveredMuscle)}
-                    </div>
-                )}
             </div>
 
             <div className="mt-4 space-y-2 w-full">
@@ -116,13 +123,25 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
             </div>
 
             <style jsx global>{`
-                [data-name] {
+                /* Enhanced hover effects for body parts */
+                svg[class*="body"] path,
+                svg[class*="body"] g {
                     transition: all 0.2s ease-in-out;
+                    cursor: pointer;
                 }
-                [data-name]:hover {
-                    filter: brightness(1.2);
-                    stroke: #0066cc;
-                    stroke-width: 2;
+
+                svg[class*="body"] path:hover,
+                svg[class*="body"] g:hover path {
+                    filter: brightness(1.3);
+                    stroke: #0066cc !important;
+                    stroke-width: 2 !important;
+                    opacity: 0.9;
+                }
+
+                /* Improve selected state visibility */
+                svg[class*="body"] path[fill*="#0066cc"] {
+                    stroke: #003d7a;
+                    stroke-width: 1.5;
                 }
             `}</style>
         </Card>
