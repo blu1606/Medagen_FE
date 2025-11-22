@@ -51,7 +51,7 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
     // Convert selectedParts to the format expected by the library
     // Library expects: { slug: string, intensity: number, side?: 'left' | 'right' }
     const data = selectedParts.map(part => ({
-        slug: part,
+        slug: part as any,
         intensity: 2
     }));
 
