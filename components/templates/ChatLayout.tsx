@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { SessionSidebar } from '@/components/organisms/SessionSidebar';
+import { AssessmentPanel } from '@/components/organisms/AssessmentPanel';
 
 interface ChatLayoutProps {
     children: React.ReactNode;
@@ -15,6 +16,7 @@ export function ChatLayout({ children, showSidebar = true }: ChatLayoutProps) {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {children}
             </div>
+            <AssessmentPanel />
         </div>
     );
 }

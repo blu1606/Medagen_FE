@@ -5,41 +5,35 @@ import Body from '@mjcdev/react-body-highlighter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 interface AdvancedBodyMapProps {
     selectedParts: string[];
     onChange: (parts: string[]) => void;
     className?: string;
+    side?: 'front' | 'back';
+    onSideChange?: (side: 'front' | 'back') => void;
 }
 
 // Muscle name mapping for better display
-const MUSCLE_NAMES: Record<string, string> = {
-    'trapezius': 'Trapezius',
-    'upper-back': 'Upper Back',
-    'lower-back': 'Lower Back',
-    'chest': 'Chest',
-    'biceps': 'Biceps',
-    'triceps': 'Triceps',
-    'forearm': 'Forearm',
-    'back-deltoids': 'Rear Shoulder',
-    'front-deltoids': 'Front Shoulder',
-    'abs': 'Abdominals',
-    'obliques': 'Obliques',
-    'adductor': 'Inner Thigh',
-    'hamstring': 'Hamstrings',
-    'quadriceps': 'Quadriceps',
-    'abductors': 'Outer Thigh',
-    'calves': 'Calves',
-    'gluteal': 'Glutes',
-    'head': 'Head',
-    'neck': 'Neck',
-    'knees': 'Knees',
-    'left-soleus': 'Left Calf',
-    'right-soleus': 'Right Calf',
-};
 
-export function AdvancedBodyMap({ selectedParts, onChange, className }: AdvancedBodyMapProps) {
-    const [side, setSide] = useState<'front' | 'back'>('front');
+
+export function AdvancedBodyMap({ selectedParts, onChange, className, side: controlledSide, onSideChange }: AdvancedBodyMapProps) {
+    const [internalSide, setInternalSide] = useState<'front' | 'back'>('front');
+    const [, forceUpdate] = useState({});
+    const { language } = useLanguageStore();
+    const t = translations[language];
+
+    // Use controlled side if provided, otherwise use internal state
+    const side = controlledSide !== undefined ? controlledSide : internalSide;
+    const setSide = (newSide: 'front' | 'back') => {
+        if (onSideChange) {
+            onSideChange(newSide);
+        } else {
+            setInternalSide(newSide);
+        }
+    };
 
     useEffect(() => {
         console.log('AdvancedBodyMap mounted');
@@ -51,7 +45,7 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
     // Convert selectedParts to the format expected by the library
     // Library expects: { slug: string, intensity: number, side?: 'left' | 'right' }
     const data = selectedParts.map(part => ({
-        slug: part,
+        slug: part as any,
         intensity: 2
     }));
 
@@ -75,49 +69,57 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
             console.log('Adding part:', partId);
             onChange([...selectedParts, partId]);
         }
+
+        // Force a re-render without changing side
+        forceUpdate({});
     }, [selectedParts, onChange]);
 
     const getMuscleDisplayName = (muscle: string | null) => {
         if (!muscle) return '';
-        return MUSCLE_NAMES[muscle] || muscle.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        // @ts-ignore
+        return t.intake.details.muscleNames[muscle] || muscle.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     };
 
     return (
-        <Card className={cn("p-4 flex flex-col items-center bg-background/50 backdrop-blur-sm", className)}>
-            <div className="flex gap-2 mb-4 w-full justify-center">
+        <div className={cn("flex flex-col items-center w-full h-full", className)}>
+            <div className="flex gap-2 mb-4 shrink-0">
                 <Button
                     variant={side === 'front' ? 'default' : 'outline'}
                     onClick={() => setSide('front')}
                     size="sm"
+                    className="h-8"
                 >
-                    Front
+                    {t.intake.details.bodyMap.front}
                 </Button>
                 <Button
                     variant={side === 'back' ? 'default' : 'outline'}
                     onClick={() => setSide('back')}
                     size="sm"
+                    className="h-8"
                 >
-                    Back
+                    {t.intake.details.bodyMap.back}
                 </Button>
             </div>
 
-            <div className="relative w-full max-w-[300px] aspect-[1/2]">
-                <Body
-                    data={data}
-                    side={side}
-                    gender="male"
-                    scale={1.5}
-                    onBodyPartClick={handleBodyPartClick}
-                    colors={['#e6f2ff', '#0066cc']}
-                    border="#dfdfdf"
-                />
+            <div className="relative flex-1 w-full min-h-0 flex items-center justify-center">
+                <div className="h-full w-full max-w-[240px] aspect-[1/2]">
+                    <Body
+                        data={data}
+                        side={side}
+                        gender="male"
+                        scale={1.2}
+                        onBodyPartClick={handleBodyPartClick}
+                        colors={['#e6f2ff', '#0066cc']}
+                        border="#dfdfdf"
+                    />
+                </div>
             </div>
 
-            <div className="mt-4 space-y-2 w-full">
-                <div className="text-xs text-muted-foreground text-center">
+            <div className="mt-2 space-y-2 w-full shrink-0">
+                <div className="text-xs text-muted-foreground text-center truncate px-2">
                     {selectedParts.length > 0
-                        ? `Selected: ${selectedParts.map(p => getMuscleDisplayName(p)).join(', ')}`
-                        : 'Tap on muscles to select/deselect'
+                        ? `${t.intake.details.bodyMap.selected}: ${selectedParts.map(p => getMuscleDisplayName(p)).join(', ')}`
+                        : t.intake.details.bodyMap.tapToSelect
                     }
                 </div>
             </div>
@@ -144,6 +146,6 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
                     stroke-width: 1.5;
                 }
             `}</style>
-        </Card>
+        </div>
     );
 }

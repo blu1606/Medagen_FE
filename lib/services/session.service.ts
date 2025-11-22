@@ -9,6 +9,9 @@ import {
 } from '@/lib/api/types';
 import { buildQueryString } from '@/lib/api/utils';
 import { transformApiError } from './errors';
+import { mockBackend } from '@/lib/mock-backend';
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.NEXT_PUBLIC_MOCK_DATA === 'TRUE';
 
 /**
  * Session Service
@@ -18,29 +21,46 @@ export const sessionService = {
     /**
      * Create a new conversation session via health-check/triage endpoint
      * @param data - Session creation data
-     * @returns Created session
+     * @param imageUrl - Optional image URL for symptom
+     * @param location - Optional location coordinates
+     * @returns Created session with triage result
      */
-    async create(data: SessionCreate): Promise<SessionResponse> {
+    async create(
+        data: SessionCreate,
+        imageUrl?: string,
+        location?: { lat: number; lng: number }
+    ): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            return mockBackend.session.create(data);
+        }
         try {
             // Transform frontend format to backend format
-            const backendPayload = {
+            // Backend expects: { user_id, text, image_url?, session_id?, location? }
+            const backendPayload: any = {
                 text: data.patient_data?.chiefComplaint || 'Health check request',
                 user_id: data.patient_id || 'anonymous',
-                session_id: undefined, // Let backend create new session
-                location: undefined, // TODO: Add location if needed
+                // session_id: undefined, // Let backend create new session
             };
 
+            if (imageUrl) {
+                backendPayload.image_url = imageUrl;
+            }
+
+            if (location) {
+                backendPayload.location = location;
+            }
+
             const response = await apiClient.post<any>(
-                ENDPOINTS.SESSIONS.CREATE,
+                ENDPOINTS.SESSIONS.CREATE, // POST /api/health-check
                 backendPayload
             );
 
-            // Backend returns: { ...triageResult, session_id, nearest_clinic? }
-            // Transform to SessionResponse format
+            // Backend returns: { triage_level, symptom_summary, red_flags, suspected_conditions, 
+            //                   cv_findings?, recommendation, nearest_clinic?, session_id }
             const backendData = response.data;
 
             const sessionResponse: SessionResponse = {
-                id: backendData.session_id, // Map session_id to id
+                id: backendData.session_id, // Backend returns session_id
                 patient_id: data.patient_id,
                 patient_data: data.patient_data,
                 agent_status: 'completed', // Triage completed
@@ -61,11 +81,34 @@ export const sessionService = {
      * @throws NotFoundError if session not found
      */
     async getById(id: string): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            return mockBackend.session.getById(id);
+        }
         try {
-            const response = await apiClient.get<SessionResponse>(
-                ENDPOINTS.SESSIONS.GET(id)
+            // Backend returns: { id, user_id, input_text, image_url, triage_level, 
+            //                   triage_result, location, created_at }
+            const response = await apiClient.get<any>(
+                ENDPOINTS.SESSIONS.GET(id) // GET /api/sessions/:id
             );
-            return response.data;
+
+            const backendData = response.data;
+
+            // Transform backend format to frontend format
+            const sessionResponse: SessionResponse = {
+                id: backendData.id,
+                patient_id: backendData.user_id,
+                patient_data: {
+                    name: backendData.user_id || 'Guest User',
+                    age: 30, // Default age
+                    chiefComplaint: backendData.input_text || '',
+                    // Map other fields if available
+                },
+                agent_status: 'completed',
+                created_at: backendData.created_at,
+                updated_at: backendData.created_at,
+            };
+
+            return sessionResponse;
         } catch (error: any) {
             throw transformApiError(error);
         }
@@ -77,6 +120,9 @@ export const sessionService = {
      * @returns Array of sessions
      */
     async list(params?: ListParams): Promise<SessionResponse[]> {
+        if (USE_MOCK) {
+            return mockBackend.session.list();
+        }
         try {
             const queryString = params ? buildQueryString(params) : '';
             const response = await apiClient.get<SessionResponse[]>(
@@ -95,6 +141,10 @@ export const sessionService = {
      * @returns Updated session
      */
     async update(id: string, updates: Partial<SessionUpdate>): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            console.log('[Mock Backend] Updating session:', id, updates);
+            return mockBackend.session.getById(id); // Return existing for now
+        }
         try {
             const response = await apiClient.put<SessionResponse>(
                 ENDPOINTS.SESSIONS.UPDATE(id),
@@ -111,6 +161,10 @@ export const sessionService = {
      * @param id - Session ID
      */
     async delete(id: string): Promise<void> {
+        if (USE_MOCK) {
+            console.log('[Mock Backend] Deleting session:', id);
+            return;
+        }
         try {
             await apiClient.delete(ENDPOINTS.SESSIONS.DELETE(id));
         } catch (error: any) {
@@ -124,6 +178,9 @@ export const sessionService = {
      * @returns Agent status information
      */
     async getAgentStatus(id: string): Promise<AgentStatusResponse> {
+        if (USE_MOCK) {
+            return { status: 'idle' };
+        }
         try {
             const response = await apiClient.get<AgentStatusResponse>(
                 ENDPOINTS.AGENTS.STATUS(id)

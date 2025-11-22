@@ -1,5 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
+import { conversationService } from '@/lib/services';
+import { storageService } from '@/lib/services/storage.service';
+import { api } from '@/lib/api';
 
 export interface TriageResult {
     triage_level: 'emergency' | 'urgent' | 'routine' | 'self_care';
@@ -7,8 +10,13 @@ export interface TriageResult {
     red_flags: string[];
     suspected_conditions: Array<{
         name: string;
+        source?: 'cv_model' | 'guideline' | 'user_report' | 'reasoning';
         confidence: 'low' | 'medium' | 'high';
     }>;
+    cv_findings?: {
+        model_used: 'derm_cv' | 'eye_cv' | 'wound_cv' | 'none';
+        raw_output?: any;
+    };
     recommendation: {
         action: string;
         timeframe: string;
@@ -31,20 +39,62 @@ export interface Message {
     image_url?: string;
     timestamp: string;
     status?: 'sending' | 'sent' | 'error';
+    triage_result?: TriageResult;
 }
 
 interface UseChatOptions {
     sessionId?: string;
     initialMessages?: Message[];
+    userId?: string;
+    location?: { lat: number; lng: number };
 }
 
-export function useChat({ sessionId, initialMessages = [] }: UseChatOptions = {}) {
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.NEXT_PUBLIC_MOCK_DATA === 'TRUE';
+
+export function useChat({ sessionId, initialMessages = [], userId = 'anonymous', location }: UseChatOptions = {}) {
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [isLoading, setIsLoading] = useState(false);
     const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
 
+    // Load conversation history on mount if sessionId exists
+    useEffect(() => {
+        if (sessionId && messages.length === 0 && !USE_MOCK) {
+            setIsLoading(true);
+            conversationService.getMessages(sessionId)
+                .then((history) => {
+                    // Transform backend messages to frontend format
+                    const transformedMessages: Message[] = history.map((msg: any) => ({
+                        id: msg.id,
+                        role: msg.role,
+                        content: msg.content,
+                        image_url: msg.image_url,
+                        timestamp: msg.created_at || msg.timestamp,
+                        status: 'sent',
+                        triage_result: msg.triage_result,
+                    }));
+                    setMessages(transformedMessages);
+                    
+                    // Set triage result if available in last message
+                    const lastMessage = transformedMessages[transformedMessages.length - 1];
+                    if (lastMessage?.triage_result) {
+                        setTriageResult(lastMessage.triage_result);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Failed to load conversation history:', error);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        }
+    }, [sessionId]);
+
     const sendMessage = useCallback(async (content: string, image?: File) => {
         if (!content.trim() && !image) return;
+        if (!sessionId) {
+            toast.error('No session ID. Please start a new assessment first.');
+            return;
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -59,58 +109,82 @@ export function useChat({ sessionId, initialMessages = [] }: UseChatOptions = {}
         setIsLoading(true);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            let imageUrl: string | undefined;
 
+            // Upload image to Supabase Storage if provided
+            if (image) {
+                try {
+                    setIsLoading(true);
+                    toast.loading('Uploading image...', { id: 'upload-image' });
+                    
+                    imageUrl = await storageService.uploadImage(image, {
+                        userId,
+                        sessionId,
+                        folder: 'chat',
+                    });
+
+                    toast.success('Image uploaded successfully', { id: 'upload-image' });
+                } catch (uploadError: any) {
+                    toast.error(uploadError.message || 'Failed to upload image', { id: 'upload-image' });
+                    // Update user message status to error
+                    setMessages((prev) =>
+                        prev.map((m) => (m.id === userMessage.id ? { ...m, status: 'error' } : m))
+                    );
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            // Call backend health-check endpoint
+            const response = await conversationService.sendMessage(
+                sessionId,
+                content,
+                imageUrl,
+                userId,
+                location
+            );
+
+            // Update user message status
             setMessages((prev) =>
                 prev.map((m) => (m.id === userMessage.id ? { ...m, status: 'sent' } : m))
             );
 
-            // Mock AI response
+            // Backend returns triage result
+            const triageData: TriageResult = {
+                triage_level: response.triage_level,
+                symptom_summary: response.symptom_summary,
+                red_flags: response.red_flags || [],
+                suspected_conditions: response.suspected_conditions || [],
+                cv_findings: response.cv_findings,
+                recommendation: response.recommendation,
+                nearest_clinic: response.nearest_clinic,
+                session_id: response.session_id || sessionId,
+            };
+
+            setTriageResult(triageData);
+
+            // Create assistant message with triage result summary
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: "I understand. Could you describe the severity of the pain on a scale of 1 to 10?",
+                content: `Based on your symptoms, I've assessed your condition as **${triageData.triage_level.toUpperCase()}**. ${triageData.recommendation.action} ${triageData.recommendation.timeframe}. ${triageData.recommendation.home_care_advice}`,
                 timestamp: new Date().toISOString(),
                 status: 'sent',
+                triage_result: triageData,
             };
+
             setMessages((prev) => [...prev, aiMessage]);
 
-            // Mock Triage Result trigger
-            if (messages.length > 2 && !triageResult) {
-                setTriageResult({
-                    triage_level: 'urgent',
-                    symptom_summary: 'Patient reports severe abdominal pain lasting 2 days.',
-                    red_flags: ['Severe pain', 'Fever'],
-                    suspected_conditions: [
-                        { name: 'Appendicitis', confidence: 'medium' },
-                        { name: 'Gastroenteritis', confidence: 'low' }
-                    ],
-                    recommendation: {
-                        action: 'Visit Urgent Care',
-                        timeframe: 'Within 4 hours',
-                        home_care_advice: 'Do not eat or drink anything.',
-                        warning_signs: 'Worsening pain, vomiting blood.'
-                    },
-                    nearest_clinic: {
-                        name: 'City General Hospital',
-                        address: '123 Main St',
-                        distance_km: 2.5,
-                        rating: 4.5
-                    }
-                });
-            }
-
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error sending message:', error);
             setMessages((prev) =>
                 prev.map((m) => (m.id === userMessage.id ? { ...m, status: 'error' } : m))
             );
-            toast.error('Failed to send message');
+            toast.error(error.message || 'Failed to send message. Please try again.');
         } finally {
             setIsLoading(false);
         }
-    }, [messages, triageResult]);
+    }, [sessionId, userId, location]);
 
     return {
         messages,

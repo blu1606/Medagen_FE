@@ -12,28 +12,28 @@ interface TriageResultsDisplayProps {
 const triageConfig = {
     emergency: {
         icon: AlertTriangle,
-        color: 'text-red-600',
+        color: 'text-red-600 dark:text-red-400',
         bgColor: 'bg-red-50 dark:bg-red-950/30',
         borderColor: 'border-red-500',
         label: 'Emergency'
     },
     urgent: {
         icon: AlertCircle,
-        color: 'text-orange-600',
+        color: 'text-orange-600 dark:text-orange-400',
         bgColor: 'bg-orange-50 dark:bg-orange-950/30',
         borderColor: 'border-orange-500',
         label: 'Urgent'
     },
     routine: {
         icon: Info,
-        color: 'text-yellow-600',
+        color: 'text-yellow-600 dark:text-yellow-400',
         bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
         borderColor: 'border-yellow-500',
         label: 'Routine'
     },
     self_care: {
         icon: CheckCircle,
-        color: 'text-green-600',
+        color: 'text-green-600 dark:text-green-400',
         bgColor: 'bg-green-50 dark:bg-green-950/30',
         borderColor: 'border-green-500',
         label: 'Self-Care'

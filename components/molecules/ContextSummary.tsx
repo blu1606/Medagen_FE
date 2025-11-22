@@ -6,6 +6,8 @@ import { ChevronDown, ChevronUp, Clock, Activity, User, AlertCircle } from 'luci
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 interface ContextSummaryProps {
     patientName?: string;
@@ -17,7 +19,7 @@ interface ContextSummaryProps {
 }
 
 export function ContextSummary({
-    patientName = "Guest User",
+    patientName,
     chiefComplaint,
     duration,
     severity,
@@ -25,6 +27,9 @@ export function ContextSummary({
     className
 }: ContextSummaryProps) {
     const [isExpanded, setIsExpanded] = useState(true);
+    const { language } = useLanguageStore();
+    const t = translations[language];
+    const defaultPatientName = patientName || t.chat.contextSummary.guestUser;
 
     const toggleExpand = () => setIsExpanded(!isExpanded);
 
@@ -44,7 +49,7 @@ export function ContextSummary({
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className={cn("h-2 w-2 rounded-full shrink-0", triageColors[triageLevel].split(' ')[0])} />
                         <span className="font-semibold truncate">
-                            {chiefComplaint || "New Consultation"}
+                            {chiefComplaint || t.chat.contextSummary.newConsultation}
                         </span>
                         {!isExpanded && (
                             <Badge variant="outline" className="ml-2 text-xs hidden sm:inline-flex">
@@ -69,25 +74,25 @@ export function ContextSummary({
                             <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-muted-foreground flex items-center gap-1">
-                                        <User size={12} /> Patient
+                                        <User size={12} /> {t.chat.contextSummary.patient}
                                     </span>
-                                    <span className="font-medium">{patientName}</span>
+                                    <span className="font-medium">{defaultPatientName}</span>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-muted-foreground flex items-center gap-1">
-                                        <AlertCircle size={12} /> Complaint
+                                        <AlertCircle size={12} /> {t.chat.contextSummary.complaint}
                                     </span>
                                     <span className="font-medium truncate" title={chiefComplaint}>{chiefComplaint}</span>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-muted-foreground flex items-center gap-1">
-                                        <Clock size={12} /> Duration
+                                        <Clock size={12} /> {t.chat.contextSummary.duration}
                                     </span>
                                     <span className="font-medium">{duration}</span>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-muted-foreground flex items-center gap-1">
-                                        <Activity size={12} /> Severity
+                                        <Activity size={12} /> {t.chat.contextSummary.severity}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <div className="h-2 flex-1 bg-muted rounded-full overflow-hidden max-w-[60px]">

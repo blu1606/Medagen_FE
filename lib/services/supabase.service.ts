@@ -38,7 +38,7 @@ export const supabaseSessionService = {
         .limit(50)
     );
 
-    if (!sessions) return [];
+    if (!sessions || !Array.isArray(sessions)) return [];
 
     // Enrich with message count and preview
     const enrichedSessions = await Promise.all(
@@ -85,7 +85,7 @@ export const supabaseSessionService = {
         .select('*')
         .eq('id', sessionId)
         .single()
-    );
+    ) as ConversationSession | null;
 
     return session;
   },
@@ -108,7 +108,7 @@ export const supabaseSessionService = {
         })
         .select()
         .single()
-    );
+    ) as ConversationSession | null;
 
     return session;
   },
@@ -176,7 +176,7 @@ export const supabaseConversationService = {
       query = query.lt('created_at', options.before);
     }
 
-    const messages = await safeSupabaseQuery(query);
+    const messages = await safeSupabaseQuery(query) as ConversationMessage[] | null;
     return messages || [];
   },
 
@@ -205,7 +205,7 @@ export const supabaseConversationService = {
         })
         .select()
         .single()
-    );
+    ) as ConversationMessage | null;
 
     // Update session timestamp
     await retrySupabaseOperation(() =>
@@ -250,7 +250,7 @@ export const supabaseTriageService = {
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
-    );
+    ) as TriageSession | null;
 
     return triageSession;
   },
@@ -271,7 +271,7 @@ export const supabaseTriageService = {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit)
-    );
+    ) as TriageSession[] | null;
 
     return sessions || [];
   },

@@ -1,15 +1,31 @@
-# Environment variables for ReAct Flow
+# Environment variables for Medagen Frontend
+
+# Backend API Configuration
+# Production Backend: https://medagen-backend.hf.space
+# Local Development: http://localhost:8000
+NEXT_PUBLIC_API_URL=https://medagen-backend.hf.space
 
 # WebSocket URL for real-time ReAct updates
-NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws/chat
+# Production: wss://medagen-backend.hf.space/ws/chat
+# Local: ws://localhost:8000/ws/chat
+NEXT_PUBLIC_WS_URL=wss://medagen-backend.hf.space/ws/chat
 
-# API URL
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Supabase Storage Bucket for Images
+# Bucket name in Supabase Storage (must be created in Supabase Dashboard)
+NEXT_PUBLIC_SUPABASE_ASSETS_BUCKET=image
 
 # Feature Flags
 NEXT_PUBLIC_ENABLE_REACT_FLOW=true
 NEXT_PUBLIC_ENABLE_WEBSOCKET=true
 NEXT_PUBLIC_ENABLE_CV_INSIGHTS=true
+
+# Mock Data (for development/testing)
+NEXT_PUBLIC_USE_MOCK_API=false
+NEXT_PUBLIC_MOCK_DATA=false
 
 # WebSocket Configuration
 NEXT_PUBLIC_MAX_RECONNECT_ATTEMPTS=5
