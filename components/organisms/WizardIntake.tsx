@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { BodyMapSelector } from '@/components/molecules/BodyMapSelector';
+import { AdvancedBodyMap } from '@/components/organisms/AdvancedBodyMap';
 import { ArrowRight, Check, ShieldAlert, Clock, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -172,7 +172,7 @@ export function WizardIntake() {
                     <h2 className="text-2xl font-bold">Where does it hurt?</h2>
                     <p className="text-muted-foreground">Tap on the body map to select areas.</p>
                 </div>
-                <BodyMapSelector
+                <AdvancedBodyMap
                     selectedParts={data.bodyParts}
                     onChange={(parts) => updateData({ bodyParts: parts })}
                 />
