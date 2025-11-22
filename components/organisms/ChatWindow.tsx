@@ -11,6 +11,7 @@ import { useSessionStore } from '@/lib/sessionStore';
 import { useAssessmentStore } from '@/lib/assessmentStore';
 import { useLanguageStore } from '@/store/languageStore';
 import { translations } from '@/lib/translations';
+import { formatInitialPatientContext } from '@/lib/utils/formatInitialContext';
 
 import { generateSmartReplies } from '@/components/molecules/QuickReplies';
 import { ContextSummary } from '@/components/molecules/ContextSummary';
@@ -31,8 +32,9 @@ interface ChatWindowProps {
 export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps) {
     const router = useRouter();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [sendingInitialData, setSendingInitialData] = useState(false);
 
-    const { getCurrentSession, setCurrentSession, currentSessionId } = useSessionStore();
+    const { getCurrentSession, setCurrentSession, currentSessionId, updateSession } = useSessionStore();
     const currentSession = getCurrentSession();
     const { language } = useLanguageStore();
     const t = translations[language];
@@ -84,20 +86,53 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
         scrollToBottom();
     }, [messages, isLoading, triageResult]);
 
-    // Initial greeting if empty
+    // Auto-send initial patient context from onboarding
     useEffect(() => {
-        if (messages.length === 0) {
-            setMessages([
-                {
-                    id: 'welcome',
-                    role: 'assistant',
-                    content: t.chat.welcome,
-                    timestamp: new Date().toISOString(),
-                    status: 'sent',
-                },
-            ]);
+        const hasSessionData = currentSession?.patientData;
+        const hasNoMessages = messages.length === 0;
+        const initialSentKey = `initial_sent_${sessionId}`;
+        const hasNotSentInitial = !localStorage.getItem(initialSentKey);
+
+        if (sessionId && hasSessionData && hasNoMessages && hasNotSentInitial && !isLoading) {
+            // Format and send initial context
+            setSendingInitialData(true);
+            const initialContext = formatInitialPatientContext(currentSession!.patientData!);
+            const image = currentSession!.patientData!.symptomImage;
+
+            sendMessage(initialContext, image).then(() => {
+                // Mark as sent to prevent duplicate sends
+                localStorage.setItem(initialSentKey, 'true');
+
+                // Clear temporary image from session after sending
+                if (image && currentSession?.patientData) {
+                    updateSession(sessionId, {
+                        patientData: {
+                            ...currentSession.patientData,
+                            symptomImage: undefined
+                        }
+                    });
+                }
+            }).catch((error) => {
+                console.error('Failed to send initial context:', error);
+                // Don't mark as sent if failed, allow retry
+            }).finally(() => {
+                setSendingInitialData(false);
+            });
+        } else if (!sessionId || !hasSessionData) {
+            // Show welcome message for sessions without patient data
+            if (messages.length === 0 && !sessionId) {
+                setMessages([
+                    {
+                        id: 'welcome',
+                        role: 'assistant',
+                        content: t.chat.welcome,
+                        timestamp: new Date().toISOString(),
+                        status: 'sent',
+                    },
+                ]);
+            }
         }
-    }, []);
+    }, [sessionId, currentSession, messages.length, isLoading]);
 
     const handleSend = async (message: string, image?: File) => {
         if (isLoading) return;
@@ -141,18 +176,33 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     }, [selectedParts, painLevel, duration, image]);
 
     const handleAttachAssessment = async () => {
-        // Construct a message with the assessment data
-        const parts = selectedParts.length ? `Parts: ${selectedParts.join(', ')}` : '';
-        const pain = `${t.chat.assessment.pain} level: ${painLevel}`;
-        const dur = duration ? `${t.chat.assessment.duration}: ${duration}` : '';
-        const img = image ? 'Image attached' : '';
-        const content = [parts, pain, dur, img].filter(Boolean).join(' | ');
+        const messageParts: string[] = [];
 
-        if (content) {
-            await sendMessage(`[Assessment Update] ${content}`);
-            // Optional: Clear draft or just keep it? 
-            // For now, we keep it in the panel but maybe hide the popup?
-            // Let's just send it.
+        if (selectedParts.length > 0) {
+            const partsText = selectedParts.length === 1
+                ? selectedParts[0]
+                : selectedParts.slice(0, -1).join(', ') + ' and ' + selectedParts[selectedParts.length - 1];
+            messageParts.push(`I'm experiencing symptoms in my ${partsText}.`);
+        }
+
+        if (painLevel > 0) {
+            let painDescription = painLevel <= 3 ? 'mild' : painLevel <= 6 ? 'moderate' : 'severe';
+            messageParts.push(`The pain level is ${painLevel}/10 (${painDescription}).`);
+        }
+
+        if (duration) {
+            messageParts.push(`This has been going on for ${duration}.`);
+        }
+
+        if (image) {
+            messageParts.push(`I've attached a photo of the affected area.`);
+        }
+
+        const messageContent = messageParts.join(' ');
+
+        if (messageContent || image) {
+            await sendMessage(messageContent, image);
+            setShowAssessmentDraft(false);
         }
     };
 

@@ -17,6 +17,13 @@ export interface ConversationSession {
         painLevel?: number;
         triageLevel?: 'emergency' | 'urgent' | 'routine';
         bodyParts?: string[];
+        // Extended fields from onboarding
+        gender?: string;
+        chronicConditions?: string[];
+        allergies?: string[];
+        currentMedications?: string;
+        severity?: 'mild' | 'moderate' | 'severe';
+        symptomImage?: File;  // Temporary storage for initial send
     };
     triageResult?: {
         severity: string;

@@ -40,7 +40,13 @@ export function AssessmentPanel({ className }: { className?: string }) {
         loadLast,
     } = useAssessmentStore();
 
-    const imageUpload = useImageUpload();
+    const imageUpload = useImageUpload({
+        onUpload: (url, file) => {
+            // Store the actual File object in the assessment store
+            setImage(file);
+        }
+    });
+
 
     // Save snapshot when user clicks "Save"
     const handleSave = async () => {
@@ -183,7 +189,10 @@ export function AssessmentPanel({ className }: { className?: string }) {
                                                 variant="destructive"
                                                 size="icon"
                                                 className="absolute top-2 right-2 h-6 w-6"
-                                                onClick={imageUpload.handleRemove}
+                                                onClick={() => {
+                                                    imageUpload.handleRemove();
+                                                    setImage(undefined);
+                                                }}
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>

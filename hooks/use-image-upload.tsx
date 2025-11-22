@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseImageUploadProps {
-  onUpload?: (url: string) => void;
+  onUpload?: (url: string, file: File) => void;
 }
 
 export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
@@ -9,6 +9,7 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleThumbnailClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -16,13 +17,14 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        setFileName(file.name);
-        const url = URL.createObjectURL(file);
+      const selectedFile = event.target.files?.[0];
+      if (selectedFile) {
+        setFileName(selectedFile.name);
+        setFile(selectedFile);
+        const url = URL.createObjectURL(selectedFile);
         setPreviewUrl(url);
         previewRef.current = url;
-        onUpload?.(url);
+        onUpload?.(url, selectedFile);
       }
     },
     [onUpload],
@@ -34,6 +36,7 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
     }
     setPreviewUrl(null);
     setFileName(null);
+    setFile(null);
     previewRef.current = null;
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -51,6 +54,7 @@ export function useImageUpload({ onUpload }: UseImageUploadProps = {}) {
   return {
     previewUrl,
     fileName,
+    file,
     fileInputRef,
     handleThumbnailClick,
     handleFileChange,

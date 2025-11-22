@@ -9,11 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/molecules/ImageUpload';
+import { BodyMapSelector } from '@/components/molecules/BodyMapSelector';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useSessionStore } from '@/lib/sessionStore';
@@ -45,6 +48,13 @@ const patientIntakeSchema = z.object({
     main_complaint: z.string()
         .min(10, 'Please provide more details (at least 10 characters)')
         .max(500, 'Description must be less than 500 characters'),
+
+    body_parts: z.array(z.string()).optional(),
+
+    pain_level: z.number()
+        .min(0, 'Pain level must be between 0 and 10')
+        .max(10, 'Pain level must be between 0 and 10')
+        .default(0),
 
     duration: z.enum([
         'less_than_1_day',
@@ -85,6 +95,8 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
             allergies: [],
             current_medications: '',
             main_complaint: '',
+            body_parts: [],
+            pain_level: 0,
         },
     });
 
@@ -134,9 +146,14 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
                 age: data.age,
                 gender: data.gender,
                 chiefComplaint: data.main_complaint,
+                bodyParts: data.body_parts || [],
+                painLevel: data.pain_level || 0,
                 duration: data.duration,
                 severity: data.severity,
-                chronicConditions: data.chronic_conditions || []
+                chronicConditions: data.chronic_conditions || [],
+                allergies: data.allergies || [],
+                currentMedications: data.current_medications,
+                symptomImage: data.symptom_image  // Temporarily store for initial send
             });
 
             if (propOnSubmit) {
@@ -332,6 +349,50 @@ export function PatientIntakeForm({ onSubmit: propOnSubmit }: PatientIntakeFormP
                                 </FormControl>
                                 <FormDescription>
                                     {field.value?.length || 0}/500 characters
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="body_parts"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Affected Body Parts (Optional)</FormLabel>
+                                <FormControl>
+                                    <BodyMapSelector
+                                        selectedParts={field.value || []}
+                                        onChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <FormDescription>
+                                    Click on the body map to select affected areas
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="pain_level"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Pain Level: {field.value}/10</FormLabel>
+                                <FormControl>
+                                    <Slider
+                                        min={0}
+                                        max={10}
+                                        step={1}
+                                        value={[field.value]}
+                                        onValueChange={(value) => field.onChange(value[0])}
+                                        className="w-full"
+                                    />
+                                </FormControl>
+                                <FormDescription>
+                                    0 = No pain, 10 = Worst pain imaginable
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
