@@ -237,6 +237,14 @@ export const translations = {
                         model: "Model",
                         assess: "Assess"
                     },
+                    patientInfo: {
+                        title: "Patient Information",
+                        name: "Name",
+                        age: "years old"
+                    },
+                    chiefComplaint: {
+                        title: "Chief Complaint"
+                    },
                     painLevel: {
                         label: "Pain Level",
                         noPain: "No Pain",
@@ -244,11 +252,22 @@ export const translations = {
                     },
                     duration: {
                         label: "Duration",
-                        placeholder: "e.g., 2 days, 1 week"
+                        placeholder: "e.g., 2 days, 1 week",
+                        notSpecified: "Not specified"
+                    },
+                    medicalHistory: {
+                        title: "Medical History"
+                    },
+                    currentMedications: {
+                        title: "Current Medications"
                     },
                     imageUpload: {
                         label: "Upload Image (optional)",
                         addPhoto: "Add photo"
+                    },
+                    infoNote: {
+                        title: "ℹ️ Information from intake",
+                        description: "This data was collected during the initial assessment. To update, please start a new assessment."
                     }
                 },
                 muscleNames: {
@@ -658,6 +677,14 @@ export const translations = {
                         model: "Mô hình",
                         assess: "Đánh giá"
                     },
+                    patientInfo: {
+                        title: "Thông tin bệnh nhân",
+                        name: "Họ tên",
+                        age: "tuổi"
+                    },
+                    chiefComplaint: {
+                        title: "Triệu chứng chính"
+                    },
                     painLevel: {
                         label: "Mức độ đau",
                         noPain: "Không đau",
@@ -665,11 +692,22 @@ export const translations = {
                     },
                     duration: {
                         label: "Thời gian",
-                        placeholder: "vd: 2 ngày, 1 tuần"
+                        placeholder: "vd: 2 ngày, 1 tuần",
+                        notSpecified: "Không xác định"
+                    },
+                    medicalHistory: {
+                        title: "Bệnh án"
+                    },
+                    currentMedications: {
+                        title: "Thuốc đang dùng"
                     },
                     imageUpload: {
                         label: "Tải ảnh lên (tùy chọn)",
                         addPhoto: "Thêm ảnh"
+                    },
+                    infoNote: {
+                        title: "ℹ️ Thông tin từ đánh giá ban đầu",
+                        description: "Dữ liệu này được thu thập trong quá trình đánh giá ban đầu. Để cập nhật, vui lòng bắt đầu đánh giá mới."
                     }
                 },
                 muscleNames: {

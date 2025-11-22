@@ -93,17 +93,20 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
         }
     }, [sessionId]);
 
-    const sendMessage = useCallback(async (content: string, image?: File) => {
+    const sendMessage = useCallback(async (content: string, image?: File, contentToSend?: string) => {
         if (!content.trim() && !image) return;
         if (!sessionId) {
             toast.error('No session ID. Please start a new assessment first.');
             return;
         }
 
+        // Use contentToSend for backend if provided, otherwise use content
+        const backendContent = contentToSend || content;
+
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content,
+            content, // UI shows only user's original message
             image_url: image ? URL.createObjectURL(image) : undefined,
             timestamp: new Date().toISOString(),
             status: 'sending',
@@ -139,10 +142,10 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
                 }
             }
 
-            // Call backend health-check endpoint
+            // Call backend health-check endpoint (send backendContent with context)
             const response = await conversationService.sendMessage(
                 sessionId,
-                content,
+                backendContent, // Use backend content (with context if first message)
                 imageUrl,
                 userId,
                 location
