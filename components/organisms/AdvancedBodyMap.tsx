@@ -83,12 +83,13 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
     };
 
     return (
-        <Card className={cn("p-4 flex flex-col items-center bg-background/50 backdrop-blur-sm", className)}>
-            <div className="flex gap-2 mb-4 w-full justify-center">
+        <div className={cn("flex flex-col items-center w-full h-full", className)}>
+            <div className="flex gap-2 mb-4 shrink-0">
                 <Button
                     variant={side === 'front' ? 'default' : 'outline'}
                     onClick={() => setSide('front')}
                     size="sm"
+                    className="h-8"
                 >
                     Front
                 </Button>
@@ -96,28 +97,31 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
                     variant={side === 'back' ? 'default' : 'outline'}
                     onClick={() => setSide('back')}
                     size="sm"
+                    className="h-8"
                 >
                     Back
                 </Button>
             </div>
 
-            <div className="relative w-full max-w-[300px] aspect-[1/2]">
-                <Body
-                    data={data}
-                    side={side}
-                    gender="male"
-                    scale={1.5}
-                    onBodyPartClick={handleBodyPartClick}
-                    colors={['#e6f2ff', '#0066cc']}
-                    border="#dfdfdf"
-                />
+            <div className="relative flex-1 w-full min-h-0 flex items-center justify-center">
+                <div className="h-full w-full max-w-[240px] aspect-[1/2]">
+                    <Body
+                        data={data}
+                        side={side}
+                        gender="male"
+                        scale={1.2}
+                        onBodyPartClick={handleBodyPartClick}
+                        colors={['#e6f2ff', '#0066cc']}
+                        border="#dfdfdf"
+                    />
+                </div>
             </div>
 
-            <div className="mt-4 space-y-2 w-full">
-                <div className="text-xs text-muted-foreground text-center">
+            <div className="mt-2 space-y-2 w-full shrink-0">
+                <div className="text-xs text-muted-foreground text-center truncate px-2">
                     {selectedParts.length > 0
                         ? `Selected: ${selectedParts.map(p => getMuscleDisplayName(p)).join(', ')}`
-                        : 'Tap on muscles to select/deselect'
+                        : 'Tap on muscles to select'
                     }
                 </div>
             </div>
@@ -144,6 +148,6 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
                     stroke-width: 1.5;
                 }
             `}</style>
-        </Card>
+        </div>
     );
 }

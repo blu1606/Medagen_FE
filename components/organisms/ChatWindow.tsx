@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useChat, type Message } from '@/hooks/useChat';
-import { useSessionStore } from '@/lib/sessionStore';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
+
+import { useChat, type Message } from '@/hooks/useChat';
+import { useSessionStore } from '@/lib/sessionStore';
+import { useAssessmentStore } from '@/lib/assessmentStore';
+
 import { generateSmartReplies } from '@/components/molecules/QuickReplies';
 import { ContextSummary } from '@/components/molecules/ContextSummary';
 import { ChatInput } from '@/components/molecules/ChatInput';
@@ -71,7 +74,6 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
-
     useEffect(() => {
         scrollToBottom();
     }, [messages, isLoading, triageResult]);
@@ -89,7 +91,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                 },
             ]);
         }
-    }, []); // Run once on mount
+    }, []);
 
     const handleSend = async (message: string) => {
         if (isLoading) return;
@@ -104,8 +106,34 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
         toast.info('Export functionality coming soon');
     };
 
+    // --- Assessment Store Draft Logic ---
+    const { selectedParts, painLevel, duration, image } = useAssessmentStore();
+    const [showAssessmentDraft, setShowAssessmentDraft] = useState(false);
+
+    // Show draft popup when assessment data changes (and is not empty)
+    useEffect(() => {
+        const hasData = selectedParts.length > 0 || painLevel > 0 || duration.length > 0 || !!image;
+        setShowAssessmentDraft(hasData);
+    }, [selectedParts, painLevel, duration, image]);
+
+    const handleAttachAssessment = async () => {
+        // Construct a message with the assessment data
+        const parts = selectedParts.length ? `Parts: ${selectedParts.join(', ')}` : '';
+        const pain = `Pain level: ${painLevel}`;
+        const dur = duration ? `Duration: ${duration}` : '';
+        const img = image ? 'Image attached' : '';
+        const content = [parts, pain, dur, img].filter(Boolean).join(' | ');
+
+        if (content) {
+            await sendMessage(`[Assessment Update] ${content}`);
+            // Optional: Clear draft or just keep it? 
+            // For now, we keep it in the panel but maybe hide the popup?
+            // Let's just send it.
+        }
+    };
+
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-full bg-background relative">
             {/* Header */}
             <header className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -119,7 +147,6 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         </p>
                     </div>
                 </div>
-
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -127,12 +154,8 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleNewSession}>
-                            New Assessment
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExport}>
-                            Export Conversation
-                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleNewSession}>New Assessment</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExport}>Export Conversation</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </header>
@@ -179,9 +202,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                                 <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                         </div>
-                        <span className="text-xs text-muted-foreground self-center animate-pulse">
-                            {thinkingText}
-                        </span>
+                        <span className="text-xs text-muted-foreground self-center animate-pulse">{thinkingText}</span>
                     </div>
                 )}
 
@@ -211,8 +232,25 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="sticky bottom-0 z-20">
+            {/* Input Area with Assessment Popup */}
+            <div className="sticky bottom-0 z-20 flex flex-col">
+                {/* Assessment Draft Popup */}
+                <AnimatePresence>
+                    {showAssessmentDraft && !triageResult && (
+                        <div className="mx-4 mb-2 p-3 bg-accent/50 backdrop-blur-md border rounded-lg shadow-lg flex items-center justify-between animate-in slide-in-from-bottom-2 fade-in duration-300">
+                            <div className="flex flex-col text-sm">
+                                <span className="font-medium text-foreground">Assessment Update Pending</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {selectedParts.length} areas • Pain: {painLevel} • {duration || 'No duration'}
+                                </span>
+                            </div>
+                            <Button size="sm" onClick={handleAttachAssessment} className="ml-4">
+                                Send Update
+                            </Button>
+                        </div>
+                    )}
+                </AnimatePresence>
+
                 {!triageResult && (
                     <ChatInput
                         onSend={handleSend}

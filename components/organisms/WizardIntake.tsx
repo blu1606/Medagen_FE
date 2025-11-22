@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import dynamic from 'next/dynamic';
-import { ArrowRight, Check, ShieldAlert, Clock, Activity, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, ShieldAlert, Clock, Activity, Loader2, ImagePlus, X } from 'lucide-react';
 
 const AdvancedBodyMap = dynamic(
     () => import('@/components/organisms/AdvancedBodyMap').then(mod => mod.AdvancedBodyMap),
@@ -15,6 +15,7 @@ const AdvancedBodyMap = dynamic(
 );
 import { cn } from '@/lib/utils';
 import { useCreateSession } from '@/hooks/useStores';
+import { useImageUpload } from '@/hooks/use-image-upload';
 
 // Types
 type IntakeData = {
@@ -23,6 +24,7 @@ type IntakeData = {
     bodyParts: string[];
     painLevel: number;
     duration: string;
+    symptomImage?: string;
 };
 
 export function WizardIntake() {
@@ -151,6 +153,14 @@ export function WizardIntake() {
     );
 
     // Step 1: Chief Complaint
+    const imageUpload = useImageUpload();
+
+    const handleComplaintKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && data.chiefComplaint) {
+            nextStep();
+        }
+    };
+
     const StepComplaint = () => (
         <div className="space-y-6 max-w-md mx-auto">
             <div className="text-center space-y-2">
@@ -164,8 +174,57 @@ export function WizardIntake() {
                     className="text-lg h-12"
                     value={data.chiefComplaint}
                     onChange={(e) => updateData({ chiefComplaint: e.target.value })}
+                    onKeyPress={handleComplaintKeyPress}
                     autoFocus
                 />
+
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Upload Image (Optional)</Label>
+                    <div className="flex items-center gap-3">
+                        <input
+                            ref={imageUpload.fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={imageUpload.handleFileChange}
+                            className="hidden"
+                        />
+                        {!imageUpload.previewUrl ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={imageUpload.handleThumbnailClick}
+                                className="flex-1 h-24 border-dashed"
+                            >
+                                <div className="flex flex-col items-center gap-2">
+                                    <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">Add photo of symptom</span>
+                                </div>
+                            </Button>
+                        ) : (
+                            <div className="relative flex-1 h-24 rounded-lg border overflow-hidden">
+                                <img
+                                    src={imageUpload.previewUrl}
+                                    alt="Symptom preview"
+                                    className="w-full h-full object-cover"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-2 right-2 h-6 w-6"
+                                    onClick={imageUpload.handleRemove}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                    {imageUpload.fileName && (
+                        <p className="text-xs text-muted-foreground">{imageUpload.fileName}</p>
+                    )}
+                </div>
+
                 <Button
                     className="w-full h-12 text-lg"
                     disabled={!data.chiefComplaint}

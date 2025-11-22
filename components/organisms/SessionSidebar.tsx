@@ -141,8 +141,8 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
                                     </h3>
                                 )}
                                 <div className="space-y-1">
-                                    {group.map(session => (
-                                        <SessionItem key={session.id} session={session} />
+                                    {group.map((session, index) => (
+                                        <SessionItem key={`${session.id}-${index}`} session={session} />
                                     ))}
                                 </div>
                             </div>
