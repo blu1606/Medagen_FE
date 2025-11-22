@@ -24,6 +24,11 @@ import { ReActFlowContainer } from '@/components/organisms/ReActFlowContainer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EnhancedChatInput } from '../molecules/EnhancedChatInput';
 
+import { GenerateReportButton } from '@/components/atoms/GenerateReportButton';
+import { CompleteTriageReportCard } from '@/components/organisms/CompleteTriageReportCard';
+import { generateCompleteReport } from '@/lib/triageAdapter';
+import { CompleteTriageReport } from '@/lib/api/types';
+
 interface ChatWindowProps {
     sessionId?: string;
     initialMessages?: Message[];
@@ -38,6 +43,10 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
     const currentSession = getCurrentSession();
     const { language } = useLanguageStore();
     const t = translations[language];
+
+    // Triage Report State
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportData, setReportData] = useState<CompleteTriageReport | null>(null);
 
     // Fetch sessions on mount
     useEffect(() => {
@@ -166,6 +175,14 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
 
     const handleExport = () => {
         toast.info(t.chat.header.exportComingSoon);
+    };
+
+    const handleGenerateReport = () => {
+        if (triageResult && sessionId) {
+            const report = generateCompleteReport(triageResult, sessionId);
+            setReportData(report);
+            setShowReportModal(true);
+        }
     };
 
     // --- Assessment Store Draft Logic ---
@@ -298,28 +315,15 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     </div>
                 )}
 
-                {/* Enhanced Triage Result - Disabled (should be triggered by user request or model) */}
-                {/* {triageResult && currentSession?.patientData && (
-                    <div className="mt-4">
-                        <EnhancedTriageResult
-                            result={{
-                                severity: (
-                                    triageResult.triage_level === 'emergency' ? 'Emergency' :
-                                        triageResult.triage_level === 'urgent' ? 'Urgent' :
-                                            triageResult.triage_level === 'routine' ? 'Moderate' : 'Mild'
-                                ) as any,
-                                recommendation: triageResult.recommendation.action + ' - ' + triageResult.recommendation.timeframe,
-                                whileYouWait: [
-                                    triageResult.recommendation.home_care_advice,
-                                    'Monitor for warning signs: ' + triageResult.recommendation.warning_signs,
-                                    'Stay hydrated and rest',
-                                ]
-                            }}
-                            patientData={currentSession.patientData}
-                            onNewAssessment={handleNewSession}
+                {/* Triage Report Button */}
+                {triageResult && !isLoading && (
+                    <div className="flex justify-center mt-4 animate-in fade-in slide-in-from-bottom-4">
+                        <GenerateReportButton
+                            onClick={handleGenerateReport}
+                            className="shadow-md hover:shadow-lg transition-all"
                         />
                     </div>
-                )} */}
+                )}
 
                 <div ref={messagesEndRef} />
             </div>
@@ -350,6 +354,13 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     placeholder={t.chat.input.placeholder}
                 />
             </div>
+
+            {/* Triage Report Modal */}
+            <CompleteTriageReportCard
+                report={reportData}
+                open={showReportModal}
+                onOpenChange={setShowReportModal}
+            />
         </div>
     );
 }

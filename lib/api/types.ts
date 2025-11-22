@@ -162,3 +162,76 @@ export interface StreamEvent {
   event: string;
   data: string;
 }
+
+// ==================== Triage Report Types ====================
+
+export interface TriageResult {
+  triage_level: 'emergency' | 'urgent' | 'routine' | 'self_care';
+  symptom_summary: string;
+  red_flags: string[];
+  suspected_conditions: Array<{
+    name: string;
+    source: 'cv_model' | 'guideline' | 'user_report' | 'reasoning';
+    confidence: 'low' | 'medium' | 'high';
+  }>;
+  cv_findings: {
+    model_used: 'derm_cv' | 'eye_cv' | 'wound_cv' | 'none';
+    raw_output: any;
+  };
+  recommendation: {
+    action: string;
+    timeframe: string;
+    home_care_advice: string;
+    warning_signs: string;
+  };
+}
+
+export interface CompleteTriageReport extends TriageResult {
+  report_type: 'complete';
+
+  // NEW: Location data
+  nearby_facilities: MedicalFacility[];
+
+  // NEW: PDF export metadata
+  pdf_export: PDFExportMetadata;
+
+  // NEW: Follow-up & tracking
+  follow_up: {
+    checklist: string[];
+    timeline: ActionTimeline;
+    warning_signs_monitor: string[];
+  };
+
+  // Metadata
+  metadata: {
+    generated_at: string;
+    report_id: string;
+    has_sufficient_info: boolean;
+  };
+}
+
+export interface MedicalFacility {
+  name: string;
+  address: string;
+  distance_km: number;
+  facility_type: 'emergency' | 'hospital' | 'clinic' | 'specialist';
+  phone?: string;
+  coordinates: { lat: number; lng: number };
+  capabilities: string[];
+  working_hours?: string;
+  accepts_emergency?: boolean;
+}
+
+export interface PDFExportMetadata {
+  available: boolean;
+  download_url?: string;
+  qr_code?: string;
+  expires_at?: string;
+}
+
+export interface ActionTimeline {
+  immediate: string;      // Ngay lập tức
+  within_hours: string;   // Trong vài giờ
+  within_days: string;    // Trong vài ngày
+  follow_up: string;      // Tái khám
+}
