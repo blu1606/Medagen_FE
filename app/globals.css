@@ -146,7 +146,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+}
 
+.step {
   counter-increment: step;
 }
 
@@ -154,5 +156,4 @@
   @apply absolute w-9 h-9 bg-muted rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 border-background;
   @apply ml-[-50px] mt-[-4px];
   content: counter(step);
-}
 }
