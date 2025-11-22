@@ -21,6 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ArrowLeft, MoreVertical, Loader2 } from 'lucide-react';
 import { ReActFlowContainer } from '@/components/organisms/ReActFlowContainer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EnhancedChatInput } from '../molecules/EnhancedChatInput';
 
 interface ChatWindowProps {
     sessionId?: string;
@@ -271,7 +272,7 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     )}
                 </AnimatePresence>
 
-                <ChatInput
+                <EnhancedChatInput
                     onSend={handleSend}
                     disabled={isLoading}
                     suggestedReplies={isLoading ? [] : quickReplySuggestions}

@@ -99,12 +99,29 @@ export function MessageBubble({ message, patientName }: MessageBubbleProps) {
                     </div>
                 )}
 
+                {/* Image Display with Lightbox */}
                 {message.image_url && (
-                    <img
-                        src={message.image_url}
-                        alt="Uploaded"
-                        className="mt-2 rounded-md max-w-full"
-                    />
+                    <div className="mt-2">
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            className="relative group cursor-pointer"
+                            onClick={() => {
+                                // Open image in new tab for lightbox effect
+                                window.open(message.image_url, '_blank');
+                            }}
+                        >
+                            <img
+                                src={message.image_url}
+                                alt="Uploaded image"
+                                className="rounded-md max-w-full max-h-64 object-cover border border-border shadow-sm transition-all group-hover:shadow-md"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-md flex items-center justify-center">
+                                <span className="text-white text-xs opacity-0 group-hover:opacity-100 bg-black/50 px-2 py-1 rounded">
+                                    Click to view full size
+                                </span>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
 
                 <div className="flex items-center justify-between mt-1 gap-2">
