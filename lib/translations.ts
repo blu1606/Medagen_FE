@@ -149,35 +149,64 @@ export const translations = {
             }
         },
         intake: {
-            steps: {
-                triage: "Triage",
-                complaint: "Complaint",
-                details: "Details"
-            },
-            triage: {
-                title: "Let's check the urgency first",
-                subtitle: "Select the option that best describes your situation.",
-                emergency: {
-                    title: "Emergency",
-                    description: "Severe pain, bleeding, difficulty breathing, or loss of consciousness."
+            form: {
+                title: "Patient Information",
+                subtitle: "Please provide your information to help us better assist you",
+
+                personalInfo: {
+                    title: "Personal Information",
+                    name: {
+                        label: "Full Name",
+                        placeholder: "Enter your name"
+                    },
+                    age: {
+                        label: "Age",
+                        placeholder: "Enter your age"
+                    }
                 },
-                urgent: {
-                    title: "Urgent",
-                    description: "Need help today. High fever, infection signs, or sudden illness."
+
+                medicalInfo: {
+                    title: "Medical Information",
+                    history: {
+                        label: "Medical History (Optional)",
+                        placeholder: "E.g., diabetes, pregnancy, allergies, chronic conditions..."
+                    },
+                    medications: {
+                        label: "Current Medications (Optional)",
+                        placeholder: "List any medications you are currently taking..."
+                    }
                 },
-                routine: {
-                    title: "General Health",
-                    description: "Routine check-up, mild symptoms, or general questions."
-                }
-            },
-            complaint: {
-                title: "What's bothering you today?",
-                subtitle: "Briefly describe your main symptom.",
-                placeholder: "e.g., Severe headache behind eyes",
-                uploadImage: "Upload Image (Optional)",
-                addPhoto: "Add photo of symptom",
-                next: "Next",
-                back: "Back"
+
+                symptoms: {
+                    title: "Current Symptoms",
+                    chiefComplaint: {
+                        label: "What symptoms are you experiencing?",
+                        placeholder: "Describe your symptoms (e.g., headache, fever, cough...)"
+                    },
+                    bodyParts: {
+                        label: "Affected Areas",
+                        instruction: "Select areas on the body map"
+                    },
+                    painLevel: {
+                        label: "Pain Level",
+                        noPain: "No Pain",
+                        worstPain: "Worst Pain"
+                    },
+                    duration: {
+                        label: "How long have you had these symptoms?",
+                        options: {
+                            today: "Today",
+                            days: "2-3 Days",
+                            week: "A Week",
+                            longer: "Longer"
+                        }
+                    }
+                },
+
+                submit: "Start Consultation",
+                submitting: "Creating session...",
+                required: "Required field",
+                backToHome: "Back to Home"
             },
             details: {
                 title: "Where does it hurt?",
@@ -541,35 +570,64 @@ export const translations = {
             }
         },
         intake: {
-            steps: {
-                triage: "Phân loại",
-                complaint: "Triệu chứng",
-                details: "Chi tiết"
-            },
-            triage: {
-                title: "Hãy kiểm tra mức độ khẩn cấp trước",
-                subtitle: "Chọn tùy chọn mô tả đúng nhất tình huống của bạn.",
-                emergency: {
-                    title: "Khẩn cấp",
-                    description: "Đau dữ dội, chảy máu, khó thở hoặc mất ý thức."
+            form: {
+                title: "Thông tin bệnh nhân",
+                subtitle: "Vui lòng cung cấp thông tin để chúng tôi hỗ trợ bạn tốt hơn",
+
+                personalInfo: {
+                    title: "Thông tin cá nhân",
+                    name: {
+                        label: "Họ và tên",
+                        placeholder: "Nhập họ tên của bạn"
+                    },
+                    age: {
+                        label: "Tuổi",
+                        placeholder: "Nhập tuổi của bạn"
+                    }
                 },
-                urgent: {
-                    title: "Khẩn trương",
-                    description: "Cần giúp đỡ hôm nay. Sốt cao, dấu hiệu nhiễm trùng hoặc bệnh đột ngột."
+
+                medicalInfo: {
+                    title: "Thông tin y tế",
+                    history: {
+                        label: "Lịch sử bệnh án (Tùy chọn)",
+                        placeholder: "VD: tiểu đường, mang thai, dị ứng, bệnh mãn tính..."
+                    },
+                    medications: {
+                        label: "Thuốc đang dùng (Tùy chọn)",
+                        placeholder: "Liệt kê các loại thuốc bạn đang sử dụng..."
+                    }
                 },
-                routine: {
-                    title: "Sức khỏe chung",
-                    description: "Kiểm tra định kỳ, triệu chứng nhẹ hoặc câu hỏi chung."
-                }
-            },
-            complaint: {
-                title: "Hôm nay bạn thấy thế nào?",
-                subtitle: "Mô tả ngắn gọn triệu chứng chính của bạn.",
-                placeholder: "ví dụ: Đau đầu dữ dội sau mắt",
-                uploadImage: "Tải lên hình ảnh (Tùy chọn)",
-                addPhoto: "Thêm ảnh triệu chứng",
-                next: "Tiếp theo",
-                back: "Quay lại"
+
+                symptoms: {
+                    title: "Triệu chứng hiện tại",
+                    chiefComplaint: {
+                        label: "Bạn đang gặp triệu chứng gì?",
+                        placeholder: "Mô tả triệu chứng của bạn (vd: đau đầu, sốt, ho...)"
+                    },
+                    bodyParts: {
+                        label: "Vùng bị ảnh hưởng",
+                        instruction: "Chọn vùng trên bản đồ cơ thể"
+                    },
+                    painLevel: {
+                        label: "Mức độ đau",
+                        noPain: "Không đau",
+                        worstPain: "Đau nhất"
+                    },
+                    duration: {
+                        label: "Bạn có triệu chứng này được bao lâu?",
+                        options: {
+                            today: "Hôm nay",
+                            days: "2-3 ngày",
+                            week: "Một tuần",
+                            longer: "Lâu hơn"
+                        }
+                    }
+                },
+
+                submit: "Bắt đầu tư vấn",
+                submitting: "Đang tạo phiên...",
+                required: "Trường bắt buộc",
+                backToHome: "Về trang chủ"
             },
             details: {
                 title: "Bạn đau ở đâu?",
