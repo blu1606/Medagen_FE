@@ -21,32 +21,46 @@ export const sessionService = {
     /**
      * Create a new conversation session via health-check/triage endpoint
      * @param data - Session creation data
-     * @returns Created session
+     * @param imageUrl - Optional image URL for symptom
+     * @param location - Optional location coordinates
+     * @returns Created session with triage result
      */
-    async create(data: SessionCreate): Promise<SessionResponse> {
+    async create(
+        data: SessionCreate,
+        imageUrl?: string,
+        location?: { lat: number; lng: number }
+    ): Promise<SessionResponse> {
         if (USE_MOCK) {
             return mockBackend.session.create(data);
         }
         try {
             // Transform frontend format to backend format
-            const backendPayload = {
+            // Backend expects: { user_id, text, image_url?, session_id?, location? }
+            const backendPayload: any = {
                 text: data.patient_data?.chiefComplaint || 'Health check request',
                 user_id: data.patient_id || 'anonymous',
-                session_id: undefined, // Let backend create new session
-                location: undefined, // TODO: Add location if needed
+                // session_id: undefined, // Let backend create new session
             };
 
+            if (imageUrl) {
+                backendPayload.image_url = imageUrl;
+            }
+
+            if (location) {
+                backendPayload.location = location;
+            }
+
             const response = await apiClient.post<any>(
-                ENDPOINTS.SESSIONS.CREATE,
+                ENDPOINTS.SESSIONS.CREATE, // POST /api/health-check
                 backendPayload
             );
 
-            // Backend returns: { ...triageResult, session_id, nearest_clinic? }
-            // Transform to SessionResponse format
+            // Backend returns: { triage_level, symptom_summary, red_flags, suspected_conditions, 
+            //                   cv_findings?, recommendation, nearest_clinic?, session_id }
             const backendData = response.data;
 
             const sessionResponse: SessionResponse = {
-                id: backendData.session_id, // Map session_id to id
+                id: backendData.session_id, // Backend returns session_id
                 patient_id: data.patient_id,
                 patient_data: data.patient_data,
                 agent_status: 'completed', // Triage completed
@@ -71,10 +85,28 @@ export const sessionService = {
             return mockBackend.session.getById(id);
         }
         try {
-            const response = await apiClient.get<SessionResponse>(
-                ENDPOINTS.SESSIONS.GET(id)
+            // Backend returns: { id, user_id, input_text, image_url, triage_level, 
+            //                   triage_result, location, created_at }
+            const response = await apiClient.get<any>(
+                ENDPOINTS.SESSIONS.GET(id) // GET /api/sessions/:id
             );
-            return response.data;
+            
+            const backendData = response.data;
+            
+            // Transform backend format to frontend format
+            const sessionResponse: SessionResponse = {
+                id: backendData.id,
+                patient_id: backendData.user_id,
+                patient_data: {
+                    chiefComplaint: backendData.input_text || '',
+                    // Map other fields if available
+                },
+                agent_status: 'completed',
+                created_at: backendData.created_at,
+                updated_at: backendData.created_at,
+            };
+
+            return sessionResponse;
         } catch (error: any) {
             throw transformApiError(error);
         }

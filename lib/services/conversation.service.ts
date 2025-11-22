@@ -14,43 +14,66 @@ export const conversationService = {
     /**
      * Get all messages for a session
      * @param sessionId - Session ID
+     * @param limit - Optional limit for messages (default: 20)
      * @returns Array of messages in chronological order
      */
-    async getMessages(sessionId: string): Promise<MessageResponse[]> {
+    async getMessages(sessionId: string, limit?: number): Promise<MessageResponse[]> {
         if (USE_MOCK) {
             return mockBackend.conversation.getMessages(sessionId);
         }
         try {
-            const response = await apiClient.get<MessageResponse[]>(
-                ENDPOINTS.CONVERSATIONS.MESSAGES(sessionId)
+            const queryParams = limit ? `?limit=${limit}` : '';
+            const response = await apiClient.get<{ messages: MessageResponse[], count: number }>(
+                `${ENDPOINTS.CONVERSATIONS.MESSAGES(sessionId)}${queryParams}`
             );
-            return response.data;
+            // Backend returns { messages: [], count: number }
+            return response.data.messages || [];
         } catch (error: any) {
             throw transformApiError(error);
         }
     },
 
     /**
-     * Send a message to a session
+     * Send a message to a session via health-check endpoint
      * @param sessionId - Session ID
      * @param content - Message content
-     * @returns User message response
+     * @param imageUrl - Optional image URL
+     * @param userId - User ID (required by backend)
+     * @param location - Optional location coordinates
+     * @returns Triage result with session_id
      */
-    async sendMessage(sessionId: string, content: string): Promise<MessageResponse> {
+    async sendMessage(
+        sessionId: string,
+        content: string,
+        imageUrl?: string,
+        userId: string = 'anonymous',
+        location?: { lat: number; lng: number }
+    ): Promise<any> {
         if (USE_MOCK) {
             return mockBackend.conversation.sendMessage(sessionId, content);
         }
         try {
-            const messageData: MessageCreate = {
-                role: 'user',
-                content,
+            // Backend expects: { user_id, text, image_url?, session_id, location? }
+            const payload: any = {
+                user_id: userId,
+                text: content,
+                session_id: sessionId,
             };
 
-            const response = await apiClient.post<MessageResponse>(
-                ENDPOINTS.CONVERSATIONS.SEND(sessionId),
-                messageData
+            if (imageUrl) {
+                payload.image_url = imageUrl;
+            }
+
+            if (location) {
+                payload.location = location;
+            }
+
+            const response = await apiClient.post<any>(
+                ENDPOINTS.SESSIONS.CREATE, // Use health-check endpoint
+                payload
             );
 
+            // Backend returns triage result with session_id
             return response.data;
         } catch (error: any) {
             throw transformApiError(error);
