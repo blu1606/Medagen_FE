@@ -9,6 +9,9 @@ import {
 } from '@/lib/api/types';
 import { buildQueryString } from '@/lib/api/utils';
 import { transformApiError } from './errors';
+import { mockBackend } from '@/lib/mock-backend';
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.NEXT_PUBLIC_MOCK_DATA === 'TRUE';
 
 /**
  * Session Service
@@ -21,6 +24,9 @@ export const sessionService = {
      * @returns Created session
      */
     async create(data: SessionCreate): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            return mockBackend.session.create(data);
+        }
         try {
             // Transform frontend format to backend format
             const backendPayload = {
@@ -61,6 +67,9 @@ export const sessionService = {
      * @throws NotFoundError if session not found
      */
     async getById(id: string): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            return mockBackend.session.getById(id);
+        }
         try {
             const response = await apiClient.get<SessionResponse>(
                 ENDPOINTS.SESSIONS.GET(id)
@@ -77,6 +86,9 @@ export const sessionService = {
      * @returns Array of sessions
      */
     async list(params?: ListParams): Promise<SessionResponse[]> {
+        if (USE_MOCK) {
+            return mockBackend.session.list();
+        }
         try {
             const queryString = params ? buildQueryString(params) : '';
             const response = await apiClient.get<SessionResponse[]>(
@@ -95,6 +107,10 @@ export const sessionService = {
      * @returns Updated session
      */
     async update(id: string, updates: Partial<SessionUpdate>): Promise<SessionResponse> {
+        if (USE_MOCK) {
+            console.log('[Mock Backend] Updating session:', id, updates);
+            return mockBackend.session.getById(id); // Return existing for now
+        }
         try {
             const response = await apiClient.put<SessionResponse>(
                 ENDPOINTS.SESSIONS.UPDATE(id),
@@ -111,6 +127,10 @@ export const sessionService = {
      * @param id - Session ID
      */
     async delete(id: string): Promise<void> {
+        if (USE_MOCK) {
+            console.log('[Mock Backend] Deleting session:', id);
+            return;
+        }
         try {
             await apiClient.delete(ENDPOINTS.SESSIONS.DELETE(id));
         } catch (error: any) {
@@ -124,6 +144,9 @@ export const sessionService = {
      * @returns Agent status information
      */
     async getAgentStatus(id: string): Promise<AgentStatusResponse> {
+        if (USE_MOCK) {
+            return { status: 'idle' };
+        }
         try {
             const response = await apiClient.get<AgentStatusResponse>(
                 ENDPOINTS.AGENTS.STATUS(id)

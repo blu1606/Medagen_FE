@@ -2,6 +2,9 @@ import apiClient from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
 import { MessageResponse, MessageCreate } from '@/lib/api/types';
 import { transformApiError } from './errors';
+import { mockBackend } from '@/lib/mock-backend';
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' || process.env.NEXT_PUBLIC_MOCK_DATA === 'TRUE';
 
 /**
  * Conversation Service
@@ -14,6 +17,9 @@ export const conversationService = {
      * @returns Array of messages in chronological order
      */
     async getMessages(sessionId: string): Promise<MessageResponse[]> {
+        if (USE_MOCK) {
+            return mockBackend.conversation.getMessages(sessionId);
+        }
         try {
             const response = await apiClient.get<MessageResponse[]>(
                 ENDPOINTS.CONVERSATIONS.MESSAGES(sessionId)
@@ -31,6 +37,9 @@ export const conversationService = {
      * @returns User message response
      */
     async sendMessage(sessionId: string, content: string): Promise<MessageResponse> {
+        if (USE_MOCK) {
+            return mockBackend.conversation.sendMessage(sessionId, content);
+        }
         try {
             const messageData: MessageCreate = {
                 role: 'user',
@@ -62,6 +71,10 @@ export const conversationService = {
         onComplete: () => void,
         onError: (error: Error) => void
     ): AbortController {
+        if (USE_MOCK) {
+            return mockBackend.conversation.streamResponse(sessionId, onChunk, onComplete);
+        }
+
         const abortController = new AbortController();
 
         const streamUrl = `${process.env.NEXT_PUBLIC_API_URL}${ENDPOINTS.CONVERSATIONS.STREAM(sessionId)}`;
@@ -103,6 +116,10 @@ export const conversationService = {
      * @param messageId - Message ID
      */
     async deleteMessage(sessionId: string, messageId: string): Promise<void> {
+        if (USE_MOCK) {
+            console.log('[Mock Backend] Deleting message:', messageId);
+            return;
+        }
         try {
             await apiClient.delete(
                 ENDPOINTS.CONVERSATIONS.DELETE_MESSAGE(sessionId, messageId)
