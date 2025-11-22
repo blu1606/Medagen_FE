@@ -73,7 +73,7 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
                         triage_result: msg.triage_result,
                     }));
                     setMessages(transformedMessages);
-                    
+
                     // Set triage result if available in last message
                     const lastMessage = transformedMessages[transformedMessages.length - 1];
                     if (lastMessage?.triage_result) {
@@ -116,7 +116,7 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
                 try {
                     setIsLoading(true);
                     toast.loading('Uploading image...', { id: 'upload-image' });
-                    
+
                     imageUrl = await storageService.uploadImage(image, {
                         userId,
                         sessionId,
@@ -149,7 +149,7 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
                 prev.map((m) => (m.id === userMessage.id ? { ...m, status: 'sent' } : m))
             );
 
-            // Backend returns triage result
+            // Backend returns triage result with message
             const triageData: TriageResult = {
                 triage_level: response.triage_level,
                 symptom_summary: response.symptom_summary,
@@ -163,11 +163,11 @@ export function useChat({ sessionId, initialMessages = [], userId = 'anonymous',
 
             setTriageResult(triageData);
 
-            // Create assistant message with triage result summary
+            // Use the message from backend (contains full LLM response in markdown)
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: `Based on your symptoms, I've assessed your condition as **${triageData.triage_level.toUpperCase()}**. ${triageData.recommendation.action} ${triageData.recommendation.timeframe}. ${triageData.recommendation.home_care_advice}`,
+                content: response.message || '', // Use backend's message field
                 timestamp: new Date().toISOString(),
                 status: 'sent',
                 triage_result: triageData,
