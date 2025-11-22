@@ -8,6 +8,10 @@ import { AnimatedGroup } from '@/components/ui/animated-group'
 import { HowItWorks } from '@/components/how-it-works'
 import { Pricing } from '@/components/pricing'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from '@/components/utility/ThemeToggle'
+import { useLanguageStore } from '@/store/languageStore'
+import { translations } from '@/lib/translations'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 import { Variants } from 'framer-motion'
 
@@ -32,6 +36,9 @@ const transitionVariants: { item: Variants } = {
 }
 
 export function HeroSection() {
+    const { language } = useLanguageStore();
+    const t = translations[language];
+
     return (
         <>
             <HeroHeader />
@@ -100,7 +107,7 @@ export function HeroSection() {
                                     <Link
                                         href="#link"
                                         className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
-                                        <span className="text-foreground text-sm">AI-Powered Health Triage Available 24/7</span>
+                                        <span className="text-foreground text-sm">{t.hero.badge}</span>
                                         <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -117,11 +124,11 @@ export function HeroSection() {
 
                                     <h1
                                         className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                                        Get Instant Health Guidance When You Need It Most
+                                        {t.hero.title}
                                     </h1>
                                     <p
                                         className="mx-auto mt-8 max-w-2xl text-balance text-lg">
-                                        Advanced AI triage to help you decide if you need emergency care, a doctor's visit, or self-care at home. Available 24/7 with clinical accuracy you can trust.
+                                        {t.hero.description}
                                     </p>
                                 </AnimatedGroup>
 
@@ -146,7 +153,7 @@ export function HeroSection() {
                                             size="lg"
                                             className="rounded-xl px-5 text-base">
                                             <Link href="/intake">
-                                                <span className="text-nowrap">Start Free Assessment</span>
+                                                <span className="text-nowrap">{t.hero.startAssessment}</span>
                                             </Link>
                                         </Button>
                                     </div>
@@ -157,7 +164,7 @@ export function HeroSection() {
                                         variant="ghost"
                                         className="h-10.5 rounded-xl px-5">
                                         <Link href="#how-it-works">
-                                            <span className="text-nowrap">Learn How It Works</span>
+                                            <span className="text-nowrap">{t.hero.learnMore}</span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
@@ -207,7 +214,7 @@ export function HeroSection() {
                             <Link
                                 href="/"
                                 className="block text-sm duration-150 hover:opacity-75">
-                                <span> Meet Our Customers</span>
+                                <span> {t.hero.meetCustomers}</span>
 
                                 <ChevronRight className="ml-1 inline-block size-3" />
                             </Link>
@@ -296,10 +303,10 @@ export function HeroSection() {
                     <div className="mx-auto max-w-7xl px-6">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                                Advanced AI Health Triage
+                                {t.features.title}
                             </h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                                Powered by cutting-edge medical AI and verified clinical guidelines
+                                {t.features.subtitle}
                             </p>
                         </div>
 
@@ -310,9 +317,9 @@ export function HeroSection() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-semibold mb-3">Available 24/7</h3>
+                                <h3 className="text-xl font-semibold mb-3">{t.features.available.title}</h3>
                                 <p className="text-muted-foreground">
-                                    Get instant health guidance any time of day or night. No waiting rooms, no appointments needed.
+                                    {t.features.available.description}
                                 </p>
                             </div>
 
@@ -322,9 +329,9 @@ export function HeroSection() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-semibold mb-3">Clinical Accuracy</h3>
+                                <h3 className="text-xl font-semibold mb-3">{t.features.accuracy.title}</h3>
                                 <p className="text-muted-foreground">
-                                    Backed by advanced medical LLMs and validated against clinical triage protocols for reliable assessments.
+                                    {t.features.accuracy.description}
                                 </p>
                             </div>
 
@@ -334,9 +341,9 @@ export function HeroSection() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-semibold mb-3">Private & Secure</h3>
+                                <h3 className="text-xl font-semibold mb-3">{t.features.privacy.title}</h3>
                                 <p className="text-muted-foreground">
-                                    Your health data is encrypted with AES-256 and protected. We prioritize patient privacy and HIPAA compliance.
+                                    {t.features.privacy.description}
                                 </p>
                             </div>
                         </div>
@@ -352,10 +359,10 @@ export function HeroSection() {
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <div>
                                 <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                                    Smart Triage for Better Healthcare Decisions
+                                    {t.solutions.title}
                                 </h2>
                                 <p className="text-lg text-muted-foreground mb-8">
-                                    Medagen uses advanced medical AI to help you make informed decisions about your health. Whether it's an emergency, urgent care need, or something you can manage at home, we provide clear guidance.
+                                    {t.solutions.description}
                                 </p>
                                 <div className="space-y-4">
                                     <div className="flex gap-3">
@@ -365,8 +372,8 @@ export function HeroSection() {
                                             </svg>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold mb-1">Emergency Detection</h4>
-                                            <p className="text-sm text-muted-foreground">Identifies critical symptoms requiring immediate medical attention</p>
+                                            <h4 className="font-semibold mb-1">{t.solutions.emergency.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{t.solutions.emergency.description}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
@@ -376,8 +383,8 @@ export function HeroSection() {
                                             </svg>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold mb-1">Nearby Facilities</h4>
-                                            <p className="text-sm text-muted-foreground">Locates the nearest appropriate healthcare facilities for your needs</p>
+                                            <h4 className="font-semibold mb-1">{t.solutions.facilities.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{t.solutions.facilities.description}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
@@ -387,22 +394,31 @@ export function HeroSection() {
                                             </svg>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold mb-1">Self-Care Guidance</h4>
-                                            <p className="text-sm text-muted-foreground">Provides home care advice for minor ailments and symptoms</p>
+                                            <h4 className="font-semibold mb-1">{t.solutions.selfCare.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{t.solutions.selfCare.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center mt-0.5">
+                                            <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold mb-1">{t.solutions.realTime.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{t.solutions.realTime.description}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="relative">
                                 <div className="aspect-square rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-8 border">
-                                    <div className="h-full w-full rounded-xl bg-card border shadow-lg flex items-center justify-center">
-                                        <div className="text-center p-8">
-                                            <svg className="h-24 w-24 mx-auto mb-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            <h3 className="text-2xl font-bold mb-2">Real-Time Triage</h3>
-                                            <p className="text-muted-foreground">Instant AI-powered analysis</p>
-                                        </div>
+                                    <div className="h-full w-full rounded-xl bg-card border shadow-lg overflow-hidden">
+                                        <img
+                                            src="/real_time_triage.png"
+                                            alt="Real-Time Triage Dashboard"
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -474,23 +490,21 @@ export function HeroSection() {
                 <section className="bg-gradient-to-b from-primary/5 to-background py-16 md:py-24">
                     <div className="mx-auto max-w-4xl px-6 text-center">
                         <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                            Ready to Get Started?
+                            {t.cta.title}
                         </h2>
                         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                            Start your free health assessment now. No registration required.
+                            {t.cta.description}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild size="lg" className="text-lg px-8 h-12">
                                 <Link href="/intake">
-                                    Start Free Assessment
+                                    {t.cta.button}
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </Button>
                         </div>
                         <p className="text-xs text-muted-foreground mt-8">
-                            <strong>Medical Disclaimer:</strong> Medagen is an AI assistant for health triage guidance only.
-                            It does not replace professional medical advice, diagnosis, or treatment.
-                            In case of emergency, call your local emergency number immediately.
+                            <strong>{t.footer.medicalDisclaimer}:</strong> {t.cta.disclaimer}
                         </p>
                     </div>
                 </section>
@@ -504,38 +518,38 @@ export function HeroSection() {
                                     <Logo className="h-6" />
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    AI-powered health triage for instant, accurate medical guidance.
+                                    {t.footer.description}
                                 </p>
                             </div>
                             <div>
-                                <h4 className="font-semibold mb-4">Product</h4>
+                                <h4 className="font-semibold mb-4">{t.footer.product}</h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><Link href="#features" className="hover:text-foreground">Features</Link></li>
-                                    <li><Link href="#how-it-works" className="hover:text-foreground">How It Works</Link></li>
-                                    <li><Link href="#solutions" className="hover:text-foreground">Solutions</Link></li>
-                                    <li><Link href="/intake" className="hover:text-foreground">Start Assessment</Link></li>
+                                    <li><Link href="#features" className="hover:text-foreground">{t.nav.features}</Link></li>
+                                    <li><Link href="#how-it-works" className="hover:text-foreground">{t.nav.howItWorks}</Link></li>
+                                    <li><Link href="#solutions" className="hover:text-foreground">{t.nav.solutions}</Link></li>
+                                    <li><Link href="/intake" className="hover:text-foreground">{t.hero.startAssessment}</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="font-semibold mb-4">Company</h4>
+                                <h4 className="font-semibold mb-4">{t.footer.company}</h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><Link href="#about" className="hover:text-foreground">About Us</Link></li>
-                                    <li><Link href="#privacy" className="hover:text-foreground">Privacy Policy</Link></li>
-                                    <li><Link href="#terms" className="hover:text-foreground">Terms of Service</Link></li>
-                                    <li><Link href="#contact" className="hover:text-foreground">Contact</Link></li>
+                                    <li><Link href="#about" className="hover:text-foreground">{t.footer.about}</Link></li>
+                                    <li><Link href="#privacy" className="hover:text-foreground">{t.footer.privacy}</Link></li>
+                                    <li><Link href="#terms" className="hover:text-foreground">{t.footer.terms}</Link></li>
+                                    <li><Link href="#contact" className="hover:text-foreground">{t.footer.contact}</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="font-semibold mb-4">Legal</h4>
+                                <h4 className="font-semibold mb-4">{t.footer.legal}</h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><Link href="#hipaa" className="hover:text-foreground">HIPAA Compliance</Link></li>
-                                    <li><Link href="#disclaimer" className="hover:text-foreground">Medical Disclaimer</Link></li>
-                                    <li><Link href="#security" className="hover:text-foreground">Security</Link></li>
+                                    <li><Link href="#hipaa" className="hover:text-foreground">{t.footer.hipaa}</Link></li>
+                                    <li><Link href="#disclaimer" className="hover:text-foreground">{t.footer.medicalDisclaimer}</Link></li>
+                                    <li><Link href="#security" className="hover:text-foreground">{t.footer.security}</Link></li>
                                 </ul>
                             </div>
                         </div>
                         <div className="border-t pt-8 text-center text-sm text-muted-foreground">
-                            <p>&copy; {new Date().getFullYear()} Medagen AI. All rights reserved.</p>
+                            <p>&copy; {new Date().getFullYear()} Medagen AI. {t.footer.rights}</p>
                         </div>
                     </div>
                 </footer>
@@ -544,14 +558,16 @@ export function HeroSection() {
     )
 }
 
-const menuItems = [
-    { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Solutions', href: '#solutions' },
-    { name: 'Pricing', href: '#pricing' },
-]
-
 const HeroHeader = () => {
+    const { language } = useLanguageStore();
+    const t = translations[language];
+
+    const menuItems = [
+        { name: t.nav.features, href: '#features' },
+        { name: t.nav.howItWorks, href: '#how-it-works' },
+        { name: t.nav.solutions, href: '#solutions' },
+        { name: t.nav.pricing, href: '#pricing' },
+    ]
     const [menuState, setMenuState] = React.useState(false)
     const [isScrolled, setIsScrolled] = React.useState(false)
 
@@ -614,14 +630,15 @@ const HeroHeader = () => {
                                     ))}
                                 </ul>
                             </div>
-                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit md:items-center">
+                                <ThemeToggle />
                                 <Button
                                     asChild
                                     variant="outline"
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
                                     <Link href="#">
-                                        <span>Login</span>
+                                        <span>{t.nav.login}</span>
                                     </Link>
                                 </Button>
                                 <Button
@@ -629,7 +646,7 @@ const HeroHeader = () => {
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
                                     <Link href="#">
-                                        <span>Sign Up</span>
+                                        <span>{t.nav.signUp}</span>
                                     </Link>
                                 </Button>
                                 <Button
@@ -637,9 +654,10 @@ const HeroHeader = () => {
                                     size="sm"
                                     className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}>
                                     <Link href="#">
-                                        <span>Get Started</span>
+                                        <span>{t.nav.getStarted}</span>
                                     </Link>
                                 </Button>
+                                <LanguageSwitcher />
                             </div>
                         </div>
                     </div>

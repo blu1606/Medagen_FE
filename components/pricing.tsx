@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useState, useRef } from "react";
 import confetti from "canvas-confetti";
 import NumberFlow from "@number-flow/react";
+import { useLanguageStore } from "@/store/languageStore";
+import { translations } from "@/lib/translations";
 
 interface PricingPlan {
   name: string;
@@ -31,10 +33,48 @@ interface PricingProps {
 }
 
 export function Pricing({
-  plans,
-  title = "Simple, Transparent Pricing",
-  description = "Choose the plan that works for you\nAll plans include access to our platform, lead generation tools, and dedicated support.",
+  plans: initialPlans,
+  title,
+  description,
 }: PricingProps) {
+  const { language } = useLanguageStore();
+  const t = translations[language];
+
+  const plans = [
+    {
+      name: t.pricing.plans.basic.name,
+      price: "0",
+      yearlyPrice: "0",
+      period: t.pricing.perMonth,
+      features: t.pricing.plans.basic.features,
+      description: t.pricing.plans.basic.description,
+      buttonText: t.pricing.plans.basic.button,
+      href: "/intake",
+      isPopular: false,
+    },
+    {
+      name: t.pricing.plans.pro.name,
+      price: "15",
+      yearlyPrice: "12",
+      period: t.pricing.perMonth,
+      features: t.pricing.plans.pro.features,
+      description: t.pricing.plans.pro.description,
+      buttonText: t.pricing.plans.pro.button,
+      href: "/intake",
+      isPopular: true,
+    },
+    {
+      name: t.pricing.plans.enterprise.name,
+      price: "40",
+      yearlyPrice: "32",
+      period: t.pricing.perMonth,
+      features: t.pricing.plans.enterprise.features,
+      description: t.pricing.plans.enterprise.description,
+      buttonText: t.pricing.plans.enterprise.button,
+      href: "/contact",
+      isPopular: false,
+    },
+  ];
   const [isMonthly, setIsMonthly] = useState(true);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const switchRef = useRef<HTMLButtonElement>(null);
@@ -73,10 +113,10 @@ export function Pricing({
       <div className="container mx-auto px-4">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            {title}
+            {t.pricing.title}
           </h2>
           <p className="text-muted-foreground text-lg whitespace-pre-line">
-            {description}
+            {t.pricing.description}
           </p>
         </div>
 
@@ -92,7 +132,7 @@ export function Pricing({
             </Label>
           </label>
           <span className="ml-2 font-semibold">
-            Annual billing <span className="text-primary">(Save 20%)</span>
+            {t.pricing.annualBilling} <span className="text-primary">({t.pricing.save})</span>
           </span>
         </div>
 
@@ -136,7 +176,7 @@ export function Pricing({
                 <div className="absolute top-0 right-0 bg-primary py-0.5 px-2 rounded-bl-xl rounded-tr-xl flex items-center">
                   <Star className="text-primary-foreground h-4 w-4 fill-current" />
                   <span className="text-primary-foreground ml-1 font-sans font-semibold">
-                    Popular
+                    {t.pricing.popular}
                   </span>
                 </div>
               )}
@@ -172,7 +212,7 @@ export function Pricing({
                 </div>
 
                 <p className="text-xs leading-5 text-muted-foreground">
-                  {isMonthly ? "billed monthly" : "billed annually"}
+                  {isMonthly ? t.pricing.monthly : t.pricing.annually}
                 </p>
 
                 <ul className="mt-5 gap-2 flex flex-col">

@@ -10,6 +10,8 @@ interface AdvancedBodyMapProps {
     selectedParts: string[];
     onChange: (parts: string[]) => void;
     className?: string;
+    side?: 'front' | 'back';
+    onSideChange?: (side: 'front' | 'back') => void;
 }
 
 // Muscle name mapping for better display
@@ -38,8 +40,19 @@ const MUSCLE_NAMES: Record<string, string> = {
     'right-soleus': 'Right Calf',
 };
 
-export function AdvancedBodyMap({ selectedParts, onChange, className }: AdvancedBodyMapProps) {
-    const [side, setSide] = useState<'front' | 'back'>('front');
+export function AdvancedBodyMap({ selectedParts, onChange, className, side: controlledSide, onSideChange }: AdvancedBodyMapProps) {
+    const [internalSide, setInternalSide] = useState<'front' | 'back'>('front');
+    const [, forceUpdate] = useState({});
+
+    // Use controlled side if provided, otherwise use internal state
+    const side = controlledSide !== undefined ? controlledSide : internalSide;
+    const setSide = (newSide: 'front' | 'back') => {
+        if (onSideChange) {
+            onSideChange(newSide);
+        } else {
+            setInternalSide(newSide);
+        }
+    };
 
     useEffect(() => {
         console.log('AdvancedBodyMap mounted');
@@ -75,6 +88,9 @@ export function AdvancedBodyMap({ selectedParts, onChange, className }: Advanced
             console.log('Adding part:', partId);
             onChange([...selectedParts, partId]);
         }
+
+        // Force a re-render without changing side
+        forceUpdate({});
     }, [selectedParts, onChange]);
 
     const getMuscleDisplayName = (muscle: string | null) => {
