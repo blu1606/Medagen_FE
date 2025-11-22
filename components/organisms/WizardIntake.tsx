@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { AdvancedBodyMap } from '@/components/organisms/AdvancedBodyMap';
-import { ArrowRight, Check, ShieldAlert, Clock, Activity } from 'lucide-react';
+import { ArrowRight, Check, ShieldAlert, Clock, Activity, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import { useSessionStore } from '@/lib/sessionStore';
+import { useCreateSession } from '@/hooks/useStores';
 
 // Types
 type IntakeData = {
@@ -22,8 +21,7 @@ type IntakeData = {
 };
 
 export function WizardIntake() {
-    const router = useRouter();
-    const { createSession } = useSessionStore();
+    const { createSession, isLoading, error } = useCreateSession();
     const [step, setStep] = useState(0);
     const [data, setData] = useState<IntakeData>({
         triageLevel: null,
@@ -40,32 +38,37 @@ export function WizardIntake() {
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
 
-    const handleComplete = () => {
-        // Save to store
-        const sessionId = createSession({
-            name: "Guest User", // Default for now
-            age: 30, // Default
-            chiefComplaint: data.chiefComplaint,
-            duration: data.duration,
-            painLevel: data.painLevel,
-            triageLevel: data.triageLevel || 'routine',
-            bodyParts: data.bodyParts
-        });
-
-        // Navigate to chat with new session ID
-        router.push(`/chat?session=${sessionId}`);
+    const handleComplete = async () => {
+        try {
+            await createSession({
+                name: "Guest User", // Default for now
+                age: 30, // Default
+                chiefComplaint: data.chiefComplaint,
+                duration: data.duration,
+                painLevel: data.painLevel,
+                triageLevel: data.triageLevel || 'routine',
+                bodyParts: data.bodyParts
+            });
+            // Navigation handled by useCreateSession hook
+        } catch (error) {
+            console.error('Failed to create session:', error);
+        }
     };
 
-    const handleEmergency = () => {
-        const sessionId = createSession({
-            name: "Guest User",
-            age: 30,
-            chiefComplaint: "Emergency Triage Selected",
-            triageLevel: 'emergency',
-            painLevel: 10,
-            duration: 'Acute'
-        });
-        router.push(`/chat?session=${sessionId}`);
+    const handleEmergency = async () => {
+        try {
+            await createSession({
+                name: "Guest User",
+                age: 30,
+                chiefComplaint: "Emergency Triage Selected",
+                triageLevel: 'emergency',
+                painLevel: 10,
+                duration: 'Acute'
+            });
+            // Navigation handled by useCreateSession hook
+        } catch (error) {
+            console.error('Failed to create emergency session:', error);
+        }
     };
 
     // Step 0: Triage Assessment
@@ -215,9 +218,25 @@ export function WizardIntake() {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                    <Button variant="outline" onClick={prevStep} className="flex-1">Back</Button>
-                    <Button onClick={handleComplete} className="flex-1">Start Assessment <Check className="ml-2" /></Button>
+                    <Button variant="outline" onClick={prevStep} className="flex-1" disabled={isLoading}>Back</Button>
+                    <Button onClick={handleComplete} className="flex-1" disabled={isLoading}>
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating Session...
+                            </>
+                        ) : (
+                            <>
+                                Start Assessment <Check className="ml-2" />
+                            </>
+                        )}
+                    </Button>
                 </div>
+                {error && (
+                    <div className="text-sm text-red-600 dark:text-red-400 mt-2">
+                        {error}
+                    </div>
+                )}
             </div>
         </div>
     );
