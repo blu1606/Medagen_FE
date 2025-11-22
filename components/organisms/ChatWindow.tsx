@@ -165,9 +165,6 @@ export function ChatWindow({ sessionId, initialMessages = [] }: ChatWindowProps)
                     </Button>
                     <div>
                         <h2 className="font-semibold">{t.chat.header.title}</h2>
-                        <p className="text-xs text-muted-foreground">
-                            {t.chat.header.session}: {sessionId || t.chat.header.new}
-                        </p>
                     </div>
                 </div>
                 <DropdownMenu>

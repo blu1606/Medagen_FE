@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 interface MessageBubbleProps {
     message: {
@@ -19,8 +21,11 @@ interface MessageBubbleProps {
     patientName?: string;
 }
 
-export function MessageBubble({ message, patientName = 'User' }: MessageBubbleProps) {
+export function MessageBubble({ message, patientName }: MessageBubbleProps) {
     const isUser = message.role === 'user';
+    const { language } = useLanguageStore();
+    const t = translations[language];
+    const defaultPatientName = patientName || t.chat.defaultUserName;
 
     const getInitials = (name: string) => {
         return name
@@ -121,7 +126,7 @@ export function MessageBubble({ message, patientName = 'User' }: MessageBubblePr
 
             {isUser && (
                 <Avatar className="h-8 w-8">
-                    <AvatarFallback>{getInitials(patientName)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(defaultPatientName)}</AvatarFallback>
                 </Avatar>
             )}
         </motion.div>

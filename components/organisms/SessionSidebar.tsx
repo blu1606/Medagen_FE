@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useSessionStore } from '@/lib/sessionStore';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 
 interface SessionSidebarProps {
     className?: string;
@@ -24,6 +26,8 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
     const router = useRouter();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { sessions, deleteSession, currentSessionId } = useSessionStore();
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -96,7 +100,7 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem className="text-destructive" onClick={(e) => handleDelete(session.id, e as any)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            <Trash2 className="mr-2 h-4 w-4" /> {t.sidebar.delete}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -113,7 +117,7 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
             )}
         >
             <div className="p-4 border-b flex items-center justify-between">
-                {!isCollapsed && <span className="font-semibold">History</span>}
+                {!isCollapsed && <span className="font-semibold">{t.sidebar.history}</span>}
                 <Button variant="ghost" size="icon" onClick={toggleCollapse} className="h-8 w-8">
                     {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </Button>
@@ -125,7 +129,7 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
                     onClick={handleNewChat}
                 >
                     <Plus className="h-4 w-4" />
-                    {!isCollapsed && "New Chat"}
+                    {!isCollapsed && t.sidebar.newChat}
                 </Button>
             </div>
 
@@ -133,11 +137,17 @@ export function SessionSidebar({ className }: SessionSidebarProps) {
                 <div className="space-y-4 py-2">
                     {Object.entries(groupedSessions).map(([key, group]) => {
                         if (group.length === 0) return null;
+                        const labelMap: Record<string, string> = {
+                            today: t.sidebar.today,
+                            yesterday: t.sidebar.yesterday,
+                            last7Days: t.sidebar.previous7Days,
+                            older: t.sidebar.older
+                        };
                         return (
                             <div key={key}>
                                 {!isCollapsed && (
                                     <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        {key === 'last7Days' ? 'Previous 7 Days' : key}
+                                        {labelMap[key] || key}
                                     </h3>
                                 )}
                                 <div className="space-y-1">

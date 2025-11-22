@@ -141,7 +141,7 @@ export function ChatInput({
                 )}
             </AnimatePresence>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
                 {/* Image Upload Button */}
                 <Button
                     type="button"

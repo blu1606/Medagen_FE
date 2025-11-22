@@ -193,7 +193,78 @@ export const translations = {
                 },
                 painLevel: "Pain Level (1-10)",
                 startAssessment: "Start Assessment",
-                creatingSession: "Creating Session..."
+                creatingSession: "Creating Session...",
+                backToHome: "Back to Home",
+                bodyMap: {
+                    front: "Front",
+                    back: "Back",
+                    tapToSelect: "Tap on muscles to select",
+                    selected: "Selected",
+                    selectAreas: "Select affected areas on the model"
+                },
+                assessmentPanel: {
+                    title: "Assessment",
+                    tabs: {
+                        model: "Model",
+                        assess: "Assess"
+                    },
+                    painLevel: {
+                        label: "Pain Level",
+                        noPain: "No Pain",
+                        worstPain: "Worst Pain"
+                    },
+                    duration: {
+                        label: "Duration",
+                        placeholder: "e.g., 2 days, 1 week"
+                    },
+                    imageUpload: {
+                        label: "Upload Image (optional)",
+                        addPhoto: "Add photo"
+                    }
+                },
+                muscleNames: {
+                    'trapezius': 'Trapezius',
+                    'upper-back': 'Upper Back',
+                    'lower-back': 'Lower Back',
+                    'chest': 'Chest',
+                    'biceps': 'Biceps',
+                    'triceps': 'Triceps',
+                    'forearm': 'Forearm',
+                    'back-deltoids': 'Rear Shoulder',
+                    'front-deltoids': 'Front Shoulder',
+                    'abs': 'Abdominals',
+                    'obliques': 'Obliques',
+                    'adductor': 'Inner Thigh',
+                    'hamstring': 'Hamstrings',
+                    'quadriceps': 'Quadriceps',
+                    'abductors': 'Outer Thigh',
+                    'calves': 'Calves',
+                    'gluteal': 'Glutes',
+                    'head': 'Head',
+                    'neck': 'Neck',
+                    'knees': 'Knees',
+                    'left-soleus': 'Left Calf',
+                    'right-soleus': 'Right Calf',
+                    'tibialis': 'Tibialis',
+                    'feet': 'Feet',
+                    'hands': 'Hands',
+                    'shoulders': 'Shoulders',
+                    'deltoids': 'Deltoids',
+                    'lower-abs': 'Lower Abs',
+                    'upper-abs': 'Upper Abs',
+                    'left-biceps': 'Left Biceps',
+                    'right-biceps': 'Right Biceps',
+                    'left-triceps': 'Left Triceps',
+                    'right-triceps': 'Right Triceps',
+                    'left-forearm': 'Left Forearm',
+                    'right-forearm': 'Right Forearm',
+                    'left-hand': 'Left Hand',
+                    'right-hand': 'Right Hand',
+                    'left-foot': 'Left Foot',
+                    'right-foot': 'Right Foot',
+                    'left-tibialis': 'Left Tibialis',
+                    'right-tibialis': 'Right Tibialis'
+                }
             }
         },
         chat: {
@@ -299,7 +370,25 @@ export const translations = {
                     notSure: "I'm not sure",
                     explain: "Can you explain more?"
                 }
-            }
+            },
+            contextSummary: {
+                guestUser: "Guest User",
+                newConsultation: "New Consultation",
+                patient: "Patient",
+                complaint: "Complaint",
+                duration: "Duration",
+                severity: "Severity"
+            },
+            defaultUserName: "User"
+        },
+        sidebar: {
+            history: "History",
+            newChat: "New Chat",
+            delete: "Delete",
+            today: "Today",
+            yesterday: "Yesterday",
+            previous7Days: "Previous 7 Days",
+            older: "Older"
         }
     },
     vi: {
@@ -496,7 +585,78 @@ export const translations = {
                 },
                 painLevel: "Mức độ đau (1-10)",
                 startAssessment: "Bắt đầu đánh giá",
-                creatingSession: "Đang tạo phiên..."
+                creatingSession: "Đang tạo phiên...",
+                backToHome: "Về trang chủ",
+                bodyMap: {
+                    front: "Mặt trước",
+                    back: "Mặt sau",
+                    tapToSelect: "Nhấn vào cơ để chọn",
+                    selected: "Đã chọn",
+                    selectAreas: "Chọn vùng bị ảnh hưởng trên mô hình"
+                },
+                assessmentPanel: {
+                    title: "Đánh giá",
+                    tabs: {
+                        model: "Mô hình",
+                        assess: "Đánh giá"
+                    },
+                    painLevel: {
+                        label: "Mức độ đau",
+                        noPain: "Không đau",
+                        worstPain: "Đau nhất"
+                    },
+                    duration: {
+                        label: "Thời gian",
+                        placeholder: "vd: 2 ngày, 1 tuần"
+                    },
+                    imageUpload: {
+                        label: "Tải ảnh lên (tùy chọn)",
+                        addPhoto: "Thêm ảnh"
+                    }
+                },
+                muscleNames: {
+                    'trapezius': 'Cơ thang',
+                    'upper-back': 'Lưng trên',
+                    'lower-back': 'Lưng dưới',
+                    'chest': 'Ngực',
+                    'biceps': 'Cơ nhị đầu',
+                    'triceps': 'Cơ tam đầu',
+                    'forearm': 'Cẳng tay',
+                    'back-deltoids': 'Cơ delta sau',
+                    'front-deltoids': 'Cơ delta trước',
+                    'abs': 'Cơ bụng',
+                    'obliques': 'Cơ chéo bụng',
+                    'adductor': 'Cơ khép',
+                    'hamstring': 'Gân kheo',
+                    'quadriceps': 'Cơ tứ đầu đùi',
+                    'abductors': 'Cơ dạng',
+                    'calves': 'Bắp chân',
+                    'gluteal': 'Cơ mông',
+                    'head': 'Đầu',
+                    'neck': 'Cổ',
+                    'knees': 'Đầu gối',
+                    'left-soleus': 'Cơ đế trái',
+                    'right-soleus': 'Cơ đế phải',
+                    'tibialis': 'Cơ chày trước',
+                    'feet': 'Bàn chân',
+                    'hands': 'Bàn tay',
+                    'shoulders': 'Vai',
+                    'deltoids': 'Cơ delta',
+                    'lower-abs': 'Cơ bụng dưới',
+                    'upper-abs': 'Cơ bụng trên',
+                    'left-biceps': 'Cơ nhị đầu trái',
+                    'right-biceps': 'Cơ nhị đầu phải',
+                    'left-triceps': 'Cơ tam đầu trái',
+                    'right-triceps': 'Cơ tam đầu phải',
+                    'left-forearm': 'Cẳng tay trái',
+                    'right-forearm': 'Cẳng tay phải',
+                    'left-hand': 'Bàn tay trái',
+                    'right-hand': 'Bàn tay phải',
+                    'left-foot': 'Bàn chân trái',
+                    'right-foot': 'Bàn chân phải',
+                    'left-tibialis': 'Cơ chày trước trái',
+                    'right-tibialis': 'Cơ chày trước phải'
+                }
             }
         },
         chat: {
@@ -602,7 +762,25 @@ export const translations = {
                     notSure: "Tôi không chắc",
                     explain: "Bạn có thể giải thích thêm không?"
                 }
-            }
+            },
+            contextSummary: {
+                guestUser: "Khách",
+                newConsultation: "Tư vấn mới",
+                patient: "Bệnh nhân",
+                complaint: "Triệu chứng",
+                duration: "Thời gian",
+                severity: "Mức độ"
+            },
+            defaultUserName: "Người dùng"
+        },
+        sidebar: {
+            history: "Lịch sử",
+            newChat: "Trò chuyện mới",
+            delete: "Xóa",
+            today: "Hôm nay",
+            yesterday: "Hôm qua",
+            previous7Days: "7 ngày trước",
+            older: "Cũ hơn"
         }
     }
 };

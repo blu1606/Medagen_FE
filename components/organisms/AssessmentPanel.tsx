@@ -9,6 +9,8 @@ import { Slider } from '@/components/ui/slider';
 import { X, ChevronRight, ChevronLeft, ImagePlus, Loader2 } from 'lucide-react';
 import { AdvancedBodyMap } from '@/components/organisms/AdvancedBodyMap';
 import { useAssessmentStore } from '@/lib/assessmentStore';
+import { useLanguageStore } from '@/store/languageStore';
+import { translations } from '@/lib/translations';
 import { useImageUpload } from '@/hooks/use-image-upload';
 import { assessmentService } from '@/lib/services/assessment.service';
 import { toast } from 'sonner';
@@ -19,6 +21,8 @@ export function AssessmentPanel({ className }: { className?: string }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("model");
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     const toggle = () => setCollapsed(!collapsed);
 
@@ -91,7 +95,7 @@ export function AssessmentPanel({ className }: { className?: string }) {
         }>
             {/* Header */}
             <div className="flex items-center justify-between p-2 border-b">
-                {!collapsed && <h3 className="font-semibold">Assessment</h3>}
+                {!collapsed && <h3 className="font-semibold">{t.intake.details.assessmentPanel.title}</h3>}
                 <Button variant="ghost" size="icon" onClick={toggle}>
                     {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </Button>
@@ -102,8 +106,8 @@ export function AssessmentPanel({ className }: { className?: string }) {
                 <div className="flex-1 overflow-y-auto p-2 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     <Tabs className="w-full h-full flex flex-col">
                         <TabsList className="grid w-full grid-cols-2 shrink-0">
-                            <TabsTrigger value="model" activeValue={activeTab} onValueChange={setActiveTab}>Model</TabsTrigger>
-                            <TabsTrigger value="assess" activeValue={activeTab} onValueChange={setActiveTab}>Assess</TabsTrigger>
+                            <TabsTrigger value="model" activeValue={activeTab} onValueChange={setActiveTab}>{t.intake.details.assessmentPanel.tabs.model}</TabsTrigger>
+                            <TabsTrigger value="assess" activeValue={activeTab} onValueChange={setActiveTab}>{t.intake.details.assessmentPanel.tabs.assess}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="model" activeValue={activeTab} className="flex-1 flex flex-col min-h-0 mt-2">
@@ -116,14 +120,14 @@ export function AssessmentPanel({ className }: { className?: string }) {
                                 />
                             </div>
                             <div className="mt-2 text-xs text-muted-foreground text-center shrink-0">
-                                Select affected areas on the model
+                                {t.intake.details.bodyMap.selectAreas}
                             </div>
                         </TabsContent>
 
                         <TabsContent value="assess" activeValue={activeTab} className="space-y-6">
                             {/* Pain Slider */}
                             <div className="space-y-2">
-                                <Label>Pain Level</Label>
+                                <Label>{t.intake.details.assessmentPanel.painLevel.label}</Label>
                                 <Slider
                                     min={0}
                                     max={10}
@@ -132,17 +136,17 @@ export function AssessmentPanel({ className }: { className?: string }) {
                                     onValueChange={(val) => setPain(val[0])}
                                 />
                                 <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>No Pain</span>
+                                    <span>{t.intake.details.assessmentPanel.painLevel.noPain}</span>
                                     <span className="font-medium text-foreground">{painLevel} / 10</span>
-                                    <span>Worst Pain</span>
+                                    <span>{t.intake.details.assessmentPanel.painLevel.worstPain}</span>
                                 </div>
                             </div>
 
                             {/* Duration */}
                             <div className="space-y-2">
-                                <Label>Duration</Label>
+                                <Label>{t.intake.details.assessmentPanel.duration.label}</Label>
                                 <Input
-                                    placeholder="e.g., 2 days, 1 week"
+                                    placeholder={t.intake.details.assessmentPanel.duration.placeholder}
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
                                 />
@@ -150,7 +154,7 @@ export function AssessmentPanel({ className }: { className?: string }) {
 
                             {/* Image Upload */}
                             <div className="space-y-2">
-                                <Label>Upload Image (optional)</Label>
+                                <Label>{t.intake.details.assessmentPanel.imageUpload.label}</Label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         ref={imageUpload.fileInputRef}
@@ -168,7 +172,7 @@ export function AssessmentPanel({ className }: { className?: string }) {
                                         >
                                             <div className="flex flex-col items-center gap-2">
                                                 <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                                                <span className="text-sm text-muted-foreground">Add photo</span>
+                                                <span className="text-sm text-muted-foreground">{t.intake.details.assessmentPanel.imageUpload.addPhoto}</span>
                                             </div>
                                         </Button>
                                     ) : (
